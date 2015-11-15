@@ -1,33 +1,52 @@
 defmodule Romeo.Mixfile do
   use Mix.Project
 
+  @version "0.0.0"
+
   def project do
     [app: :romeo,
-     version: "0.0.1",
+     name: "Romeo",
+     version: @version,
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     description: description,
+     deps: deps,
+     docs: docs,
+     package: package]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :connection, :exml],
      mod: {Romeo, []}]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
+  defp description do
+    "An XMPP Client for Elixir"
+  end
+
   defp deps do
-    []
+    [{:connection, "~> 1.0"},
+     {:exml, github: "paulgray/exml"},
+
+     # Docs deps
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.10", only: :dev}]
+  end
+
+  defp docs do
+    [extras: docs_extras,
+     main: "extra-readme"]
+  end
+
+  defp docs_extras do
+    ["README.md"]
+  end
+
+  defp package do
+    [files: ["lib", "priv", "mix.exs", "README.md", "LICENSE"],
+       maintainers: ["Sonny Scroggin"],
+       licenses: ["MIT"],
+       links: %{"GitHub" => "https://github.com/scrogson/romeo"}]
   end
 end
