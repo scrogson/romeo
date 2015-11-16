@@ -6,7 +6,6 @@ defmodule Romeo.Auth do
   use Romeo.XML
 
   alias Romeo.JID
-  alias Romeo.Client
   alias Romeo.Stanza
 
   defmodule Error do

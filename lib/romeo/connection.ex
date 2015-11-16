@@ -26,8 +26,6 @@ defmodule Romeo.Connection do
 
   require Logger
 
-  alias Romeo.JID
-
   ### PUBLIC API ###
 
   @doc """
@@ -36,13 +34,14 @@ defmodule Romeo.Connection do
   ## Options
 
     * `:host` - Server hostname (default: inferred by the JID);
-    * `:port` - Server port (default: `#{@default_port}`);
     * `:jid` - User jabber ID;
     * `:password` - User password;
-    * `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`);
+    * `:port` - Server port (default: based on the transport);
     * `:require_tls` - Set to `false` if ssl should not be used (default: `true`);
     * `:ssl_opts` - A list of ssl options, see ssl docs;
     * `:socket_opts` - Options to be given to the underlying socket;
+    * `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`);
+    * `:transport` - Transport handles the protocol (default: `#{@default_transport}`);
   """
   def connect(opts) do
     opts =
@@ -58,7 +57,7 @@ defmodule Romeo.Connection do
     case transport.connect(conn) do
       {:ok, conn} ->
         {:ok, conn}
-      {:error, error} ->
+      {:error, _error} ->
         {:backoff, timeout, conn}
     end
   end

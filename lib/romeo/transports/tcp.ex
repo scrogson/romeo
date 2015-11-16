@@ -100,7 +100,7 @@ defmodule Romeo.Transports.TCP do
   defp session(%Conn{} = conn) do
     conn
     |> send(Stanza.session)
-    |> recv(:wait_for_session_result, fn conn, packet ->
+    |> recv(:wait_for_session_result, fn conn, _packet ->
       conn
     end)
   end
@@ -143,7 +143,7 @@ defmodule Romeo.Transports.TCP do
     conn
   end
 
-  def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout, parser: parser} = conn, message, fun) do
+  def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, message, fun) do
     receive do
       {:tcp, ^socket, stanza} ->
         :inet.setopts(socket, active: :once)
@@ -157,7 +157,7 @@ defmodule Romeo.Transports.TCP do
       raise Hedwig.Error, message: message
     end
   end
-  def recv(%Conn{socket: {:ssl, socket}, timeout: timeout, parser: parser} = conn, message, fun) do
+  def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, message, fun) do
     receive do
       {:ssl, ^socket, stanza} ->
         :ssl.setopts(socket, active: :once)
@@ -175,26 +175,26 @@ defmodule Romeo.Transports.TCP do
   def handle_message({:tcp, socket, data}, %{socket: {:gen_tcp, socket}} = conn) do
     {:ok, _, _} = handle_data(data, conn)
   end
-  def handle_message({:tcp_closed, socket}, %{socket: {:gen_tcp, socket}} = conn) do
+  def handle_message({:tcp_closed, socket}, %{socket: {:gen_tcp, socket}}) do
     {:error, %Romeo.Error{message: "TCP connection closed."}}
   end
-  def handle_message({:tcp_error, socket, reason}, %{socket: {:gen_tcp, socket}} = conn) do
+  def handle_message({:tcp_error, socket, reason}, %{socket: {:gen_tcp, socket}}) do
     {:error, %Romeo.Error{message: "TCP connection error: #{inspect(reason)}"}}
   end
   def handle_message({:ssl, socket, data}, %{socket: {:ssl, socket}} = conn) do
     {:ok, _, _} = handle_data(data, conn)
   end
-  def handle_message({:ssl_closed, socket}, %{socket: {:ssl, socket}} = conn) do
+  def handle_message({:ssl_closed, socket}, %{socket: {:ssl, socket}}) do
     {:error, %Romeo.Error{message: "TCP connection closed."}}
   end
-  def handle_message({:ssl_error, socket, reason}, %{socket: {:ssl, socket}} = conn) do
+  def handle_message({:ssl_error, socket, reason}, %{socket: {:ssl, socket}}) do
     {:error, %Romeo.Error{message: "TCP connection error: #{inspect(reason)}"}}
   end
   def handle_message(_, _), do: :unknown
 
   defp handle_data(msg, %{socket: socket} = conn) do
     :ok = activate(socket)
-    {:ok, conn, stanza} = parse_stanza(conn, msg)
+    {:ok, _conn, _stanza} = parse_stanza(conn, msg)
   end
 
   defp activate({:gen_tcp, socket}) do
