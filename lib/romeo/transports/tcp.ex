@@ -154,7 +154,7 @@ defmodule Romeo.Transports.TCP do
       {:tcp_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      raise Hedwig.Error, message: message
+      raise Romeo.Error, message: message
     end
   end
   def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, message, fun) do
@@ -168,7 +168,7 @@ defmodule Romeo.Transports.TCP do
       {:ssl_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      raise Hedwig.Error, message: message
+      raise Romeo.Error, message: message
     end
   end
 
