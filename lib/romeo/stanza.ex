@@ -35,13 +35,13 @@ defmodule Romeo.Stanza do
 
   ## Example
 
-      iex> stanza = Hedwig.Stanza.start_stream("im.capulet.lit")
+      iex> stanza = Romeo.Stanza.start_stream("im.capulet.lit")
       {:xmlstreamstart, "stream:stream",
        [{"to", "im.capulet.lit"}, {"version", "1.0"}, {"xml:lang", "en"},
          {"xmlns", "jabber:client"},
          {"xmlns:stream", "http://etherx.jabber.org/streams"}]}
-      iex> Hedwig.Stanza.to_xml(stanza)
-      "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0' to='im.capulet.lit'>"
+      iex> Romeo.Stanza.to_xml(stanza)
+      "<stream:stream to='im.capulet.lit' version='1.0' xml:lang='en' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>"
   """
   def start_stream(server, xmlns \\ ns_jabber_client) do
     xmlstreamstart(name: "stream:stream",
@@ -58,9 +58,9 @@ defmodule Romeo.Stanza do
   Ends the XML stream
 
   ## Example
-      iex> stanza = Hedwig.Stanza.end_stream
+      iex> stanza = Romeo.Stanza.end_stream
       {:xmlstreamend, "stream:stream"}
-      iex> Hedwig.Stanza.to_xml(stanza)
+      iex> Romeo.Stanza.to_xml(stanza)
       "</stream:stream>"
   """
   def end_stream, do: xmlstreamend(name: "stream:stream")
@@ -69,9 +69,9 @@ defmodule Romeo.Stanza do
   Generates the XML to start TLS.
 
   ## Example
-      iex> stanza = Hedwig.Stanza.start_tls
+      iex> stanza = Romeo.Stanza.start_tls
       {:xmlel, "starttls", [{"xmlns", "urn:ietf:params:xml:ns:xmpp-tls"}], []}
-      iex> Hedwig.Stanza.to_xml(stanza)
+      iex> Romeo.Stanza.to_xml(stanza)
       "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>"
   """
   def start_tls do
@@ -186,7 +186,7 @@ defmodule Romeo.Stanza do
   Generates a presence stanza to join a MUC room.
 
   ## Examples
-      iex> Hedwig.Stanza.join("lobby@muc.localhost", "hedwigbot")
+      iex> Romeo.Stanza.join("lobby@muc.localhost", "hedwigbot")
       {:xmlel, "presence", [{"to", "lobby@muc.localhost/hedwigbot"}],
        [{:xmlel, "x", [{"xmlns", "http://jabber.org/protocol/muc"}],
        [{:xmlel, "history", [{"maxstanzas", "0"}], []}]}]}

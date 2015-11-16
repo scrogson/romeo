@@ -8,12 +8,12 @@ defmodule Romeo.StanzaTest do
 
   test "start_stream with default xmlns" do
     assert Stanza.start_stream("im.wonderland.lit") |> Stanza.to_xml ==
-      "<stream:stream xmlns:stream='#{ns_xmpp}' xmlns='jabber:client' xml:lang='en' version='1.0' to='im.wonderland.lit'>"
+      "<stream:stream to='im.wonderland.lit' version='1.0' xml:lang='en' xmlns='jabber:client' xmlns:stream='#{ns_xmpp}'>"
   end
 
   test "start_stream with 'jabber:server' xmlns" do
     assert Stanza.start_stream("im.wonderland.lit", ns_jabber_server) |> Stanza.to_xml ==
-      "<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:server' xml:lang='en' version='1.0' to='im.wonderland.lit'>"
+      "<stream:stream to='im.wonderland.lit' version='1.0' xml:lang='en' xmlns='jabber:server' xmlns:stream='http://etherx.jabber.org/streams'>"
   end
 
   test "end_stream" do
@@ -27,17 +27,17 @@ defmodule Romeo.StanzaTest do
 
   test "get_inband_register" do
     assert Stanza.get_inband_register |> Stanza.to_xml =~
-      ~r"<iq id='(.*)' type='get'><query xmlns='jabber:iq:register'/></iq>"
+      ~r"<iq type='get' id='(.*)'><query xmlns='jabber:iq:register'/></iq>"
   end
 
   test "set_inband_register" do
     assert Stanza.set_inband_register("username", "password") |> Stanza.to_xml =~
-      ~r"<iq id='(.*)' type='set'><query xmlns='jabber:iq:register'><username>username</username><password>password</password></query></iq>"
+      ~r"<iq type='set' id='(.*)'><query xmlns='jabber:iq:register'><username>username</username><password>password</password></query></iq>"
   end
 
   test "subscribe" do
     assert Stanza.subscribe("pubsub.wonderland.lit", "posts", "alice@wonderland.lit") |> Stanza.to_xml =~
-      ~r"<iq id='(.*)' type='set' to='pubsub.wonderland.lit'><pubsub xmlns='http://jabber.org/protocol/pubsub'><subscribe jid='alice@wonderland.lit' node='posts'/></pubsub></iq>"
+      ~r"<iq to='pubsub.wonderland.lit' type='set' id='(.*)'><pubsub xmlns='http://jabber.org/protocol/pubsub'><subscribe node='posts' jid='alice@wonderland.lit'/></pubsub></iq>"
   end
 
   test "compress" do
@@ -48,17 +48,17 @@ defmodule Romeo.StanzaTest do
   test "auth" do
     data = <<0>> <> "username" <> <<0>> <> "password"
     assert Stanza.auth("PLAIN", Stanza.base64_cdata(data)) |> Stanza.to_xml ==
-      "<auth mechanism='PLAIN' xmlns='#{ns_sasl}'>AHVzZXJuYW1lAHBhc3N3b3Jk</auth>"
+      "<auth xmlns='#{ns_sasl}' mechanism='PLAIN'>AHVzZXJuYW1lAHBhc3N3b3Jk</auth>"
   end
 
   test "bind" do
     assert Stanza.bind("hedwig") |> Stanza.to_xml =~
-      ~r"<iq id='(.*)' type='set'><bind xmlns='#{ns_bind}'><resource>hedwig</resource></bind></iq>"
+      ~r"<iq type='set' id='(.*)'><bind xmlns='#{ns_bind}'><resource>hedwig</resource></bind></iq>"
   end
 
   test "session" do
     assert Stanza.session |> Stanza.to_xml =~
-      ~r"<iq id='(.*)' type='set'><session xmlns='#{ns_session}'/></iq>"
+      ~r"<iq type='set' id='(.*)'><session xmlns='#{ns_session}'/></iq>"
   end
 
   test "presence" do
@@ -67,11 +67,11 @@ defmodule Romeo.StanzaTest do
 
   test "presence/2" do
     assert Stanza.presence("room@muc.localhost/nick", "unavailable") |> Stanza.to_xml ==
-      "<presence to='room@muc.localhost/nick' type='unavailable'/>"
+      "<presence type='unavailable' to='room@muc.localhost/nick'/>"
   end
 
   test "message" do
     assert Stanza.message("test@localhost", "chat", "Hello") |> Stanza.to_xml =~
-      ~r"<message xml:lang='en' id='(.*)' type='chat' to='test@localhost'><body>Hello</body></message>"
+      ~r"<message to='test@localhost' type='chat' id='(.*)' xml:lang='en'><body>Hello</body></message>"
   end
 end
