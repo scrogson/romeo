@@ -1,4 +1,4 @@
 %{"connection": {:hex, :connection, "1.0.1"},
   "earmark": {:hex, :earmark, "0.1.19"},
   "ex_doc": {:hex, :ex_doc, "0.10.0"},
-  "exml": {:git, "https://github.com/paulgray/exml.git", "d04d0dfc956bd2bf5d9629a7524c6840eb02df28", []}}
+  "exml": {:git, "https://github.com/esl/exml.git", "d7b745fa89389b53706a07f33775f1f814c66cb4", []}}
