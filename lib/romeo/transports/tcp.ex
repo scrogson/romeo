@@ -2,6 +2,7 @@ defmodule Romeo.Transports.TCP do
   @moduledoc false
 
   @default_port 5222
+  @ssl_opts [reuse_sessions: true]
   @socket_opts [packet: :raw, mode: :binary, active: :once]
 
   @type state :: Romeo.Connection.t
@@ -20,17 +21,29 @@ defmodule Romeo.Transports.TCP do
   def connect(%Conn{host: host, port: port, socket_opts: socket_opts} = conn) do
     host = (host || default_host(conn.jid)) |> to_char_list
     port = (port || @default_port)
-    socket_opts = socket_opts ++ @socket_opts
 
     conn = %{conn | host: host, port: port, socket_opts: socket_opts}
 
-    case :gen_tcp.connect(host, port, socket_opts, conn.timeout) do
+    case :gen_tcp.connect(host, port, socket_opts ++ @socket_opts, conn.timeout) do
       {:ok, socket} ->
         Logger.info fn -> "Connected to server" end
         {:ok, parser} = :exml_stream.new_parser
         start_protocol(%{conn | parser: parser, socket: {:gen_tcp, socket}})
       {:error, _} = error ->
         error
+    end
+  end
+
+  def disconnect(info, {mod, socket}) do
+    :ok = mod.close(socket)
+    case info do
+      {:close, from} ->
+        Connection.reply(from, :ok)
+      {:error, :closed} ->
+        :error_logger.format("Connection closed~n", [])
+      {:error, reason} ->
+        reason = :inet.format_error(reason)
+        :error_logger.format("Connection error: ~s~n", [reason])
     end
   end
 
@@ -51,13 +64,13 @@ defmodule Romeo.Transports.TCP do
     stanza = JID.parse(jid).server |> Stanza.start_stream()
     conn
     |> send(stanza)
-    |> recv(:start_stream, fn conn, _packet ->
+    |> recv(fn conn, _packet ->
       conn
     end)
   end
 
   defp negotiate_features(conn) do
-    recv(conn, :wait_for_features, fn conn, packet ->
+    recv(conn, fn conn, packet ->
       %Conn{conn | features: Features.parse_stream_features(packet)}
     end)
   end
@@ -65,7 +78,7 @@ defmodule Romeo.Transports.TCP do
   defp start_tls(%Conn{features: %Features{tls?: true}} = conn) do
     conn
     |> send(Stanza.start_tls)
-    |> recv(:wait_for_proceed, fn conn, _packet ->
+    |> recv(fn conn, _packet ->
       conn
     end)
     |> upgrade_to_tls
@@ -76,7 +89,7 @@ defmodule Romeo.Transports.TCP do
 
   defp upgrade_to_tls(%Conn{socket: {:gen_tcp, socket}} = conn) do
     Logger.info fn -> "Upgrading connection to TLS" end
-    {:ok, socket} = :ssl.connect(socket, conn.ssl_opts ++ [reuse_sessions: true])
+    {:ok, socket} = :ssl.connect(socket, conn.ssl_opts ++ @ssl_opts)
     {:ok, parser} = :exml_stream.new_parser
     Logger.info fn -> "Connection secured" end
     %Conn{conn | socket: {:ssl, socket}, parser: parser}
@@ -92,7 +105,7 @@ defmodule Romeo.Transports.TCP do
   defp bind(%Conn{resource: resource} = conn) do
     conn
     |> send(Stanza.bind(resource))
-    |> recv(:wait_for_bind_result, fn conn, _packet ->
+    |> recv(fn conn, _packet ->
       conn
     end)
   end
@@ -100,7 +113,7 @@ defmodule Romeo.Transports.TCP do
   defp session(%Conn{} = conn) do
     conn
     |> send(Stanza.session)
-    |> recv(:wait_for_session_result, fn conn, _packet ->
+    |> recv(fn conn, _packet ->
       conn
     end)
   end
@@ -108,7 +121,7 @@ defmodule Romeo.Transports.TCP do
   defp send_presence(%Conn{jid: jid} = conn) do
     conn
     |> send(Stanza.presence)
-    |> recv(:wait_for_presence_result, fn conn, _packet ->
+    |> recv(fn conn, _packet ->
       Logger.info fn -> "#{jid} successfully connected." end
       conn
     end)
@@ -143,7 +156,7 @@ defmodule Romeo.Transports.TCP do
     conn
   end
 
-  def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, message, fun) do
+  def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, fun) do
     receive do
       {:tcp, ^socket, stanza} ->
         :inet.setopts(socket, active: :once)
@@ -154,10 +167,11 @@ defmodule Romeo.Transports.TCP do
       {:tcp_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      raise Romeo.Error, message: message
+      _ = Kernel.send(self, {:error, :timeout})
+      conn
     end
   end
-  def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, message, fun) do
+  def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, fun) do
     receive do
       {:ssl, ^socket, stanza} ->
         :ssl.setopts(socket, active: :once)
@@ -168,7 +182,8 @@ defmodule Romeo.Transports.TCP do
       {:ssl_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      raise Romeo.Error, message: message
+      _ = Kernel.send(self, {:error, :timeout})
+      conn
     end
   end
 
@@ -176,19 +191,19 @@ defmodule Romeo.Transports.TCP do
     {:ok, _, _} = handle_data(data, conn)
   end
   def handle_message({:tcp_closed, socket}, %{socket: {:gen_tcp, socket}}) do
-    {:error, %Romeo.Error{message: "TCP connection closed."}}
+    {:error, :closed}
   end
   def handle_message({:tcp_error, socket, reason}, %{socket: {:gen_tcp, socket}}) do
-    {:error, %Romeo.Error{message: "TCP connection error: #{inspect(reason)}"}}
+    {:error, reason}
   end
   def handle_message({:ssl, socket, data}, %{socket: {:ssl, socket}} = conn) do
     {:ok, _, _} = handle_data(data, conn)
   end
   def handle_message({:ssl_closed, socket}, %{socket: {:ssl, socket}}) do
-    {:error, %Romeo.Error{message: "TCP connection closed."}}
+    {:error, :closed}
   end
   def handle_message({:ssl_error, socket, reason}, %{socket: {:ssl, socket}}) do
-    {:error, %Romeo.Error{message: "TCP connection error: #{inspect(reason)}"}}
+    {:error, reason}
   end
   def handle_message(_, _), do: :unknown
 
@@ -202,10 +217,10 @@ defmodule Romeo.Transports.TCP do
       :ok ->
         :ok
       {:error, :closed} ->
-        _ = Kernel.send(self(), {:tcp_closed, socket})
+        _ = Kernel.send(self, {:tcp_closed, socket})
         :ok
       {:error, reason} ->
-        _ = Kernel.send(self(), {:tcp_error, socket, reason})
+        _ = Kernel.send(self, {:tcp_error, socket, reason})
         :ok
     end
   end
@@ -214,10 +229,10 @@ defmodule Romeo.Transports.TCP do
       :ok ->
         :ok
       {:error, :closed} ->
-        _ = Kernel.send(self(), {:ssl_closed, socket})
+        _ = Kernel.send(self, {:ssl_closed, socket})
         :ok
       {:error, reason} ->
-        _ = Kernel.send(self(), {:ssl_error, socket, reason})
+        _ = Kernel.send(self, {:ssl_error, socket, reason})
         :ok
     end
   end

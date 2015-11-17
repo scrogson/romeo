@@ -59,7 +59,7 @@ defmodule Romeo.Auth do
   end
 
   defp success?(%{transport: mod} = conn) do
-    mod.recv(conn, :wait_for_auth_reply, fn conn, packet ->
+    mod.recv(conn, fn conn, packet ->
       case xmlel(packet, :name) do
         "success" -> {:ok, conn}
         "failure" -> {:error, conn}

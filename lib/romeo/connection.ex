@@ -4,7 +4,9 @@ defmodule Romeo.Connection do
   @timeout 5_000
   @default_transport Romeo.Transports.TCP
 
-  defstruct features: %Romeo.Connection.Features{},
+  alias Romeo.Connection.Features
+
+  defstruct features: %Features{},
             host: nil,
             jid: nil,
             nickname: "",
@@ -43,23 +45,21 @@ defmodule Romeo.Connection do
     * `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`);
     * `:transport` - Transport handles the protocol (default: `#{@default_transport}`);
   """
-  def connect(opts) do
+  def start_link(opts) do
     opts =
       opts
       |> Keyword.put_new(:timeout, @timeout)
       |> Keyword.put_new(:transport, @default_transport)
-      |> Keyword.put(:owner, self())
+      |> Keyword.put(:owner, self)
 
     Connection.start_link(__MODULE__, struct(__MODULE__, opts))
   end
 
-  def connect(_, %{transport: transport, timeout: timeout} = conn) do
-    case transport.connect(conn) do
-      {:ok, conn} ->
-        {:ok, conn}
-      {:error, _error} ->
-        {:backoff, timeout, conn}
-    end
+  @doc """
+  Send a message via the underlying transport.
+  """
+  def send(pid, data) do
+    Connection.cast(pid, {:send, data})
   end
 
   @doc """
@@ -69,16 +69,9 @@ defmodule Romeo.Connection do
 
     * `:timeout` - Call timeout (default: `#{@timeout}`)
   """
-  @spec stop(pid, Keyword.t) :: :ok
-  def stop(pid, opts \\ []) do
-    Connection.call(pid, :stop, opts[:timeout] || @timeout)
-  end
-
-  @doc """
-  Send a message via the underlying transport.
-  """
-  def send(pid, msg) do
-    Connection.cast(pid, {:send, msg})
+  @spec close(pid, Keyword.t) :: :ok
+  def close(pid, opts \\ []) do
+    Connection.call(pid, :close, opts[:timeout] || @timeout)
   end
 
   ## Connection callbacks
@@ -87,21 +80,43 @@ defmodule Romeo.Connection do
     {:connect, :init, conn}
   end
 
-  def handle_cast({:send, msg}, %{transport: transport} = conn) do
-    transport.send(conn, msg)
-    {:noreply, conn}
+  def connect(_, %{transport: transport, timeout: timeout} = conn) do
+    case transport.connect(conn) do
+      {:ok, conn} ->
+        {:ok, conn}
+      {:error, _} ->
+        {:backoff, timeout, conn}
+    end
   end
 
-  def handle_info(msg, %{owner: owner, transport: transport} = conn) do
-    case transport.handle_message(msg, conn) do
+  def disconnect(info, %{socket: socket, transport: transport} = conn) do
+    transport.disconnect(info, socket)
+    {:connect, :reconnect, reset_connection(conn)}
+  end
+
+  defp reset_connection(conn) do
+    %{conn | features: %Features{}, parser: nil, socket: nil}
+  end
+
+  def handle_call({:send, data}, _, %{transport: transport} = conn) do
+    case transport.send(conn, data) do
+      :ok ->
+        {:reply, :ok, conn}
+      {:error, _} = error ->
+        {:disconnect, error, error, conn}
+    end
+  end
+
+  def handle_info(info, %{owner: owner, transport: transport} = conn) do
+    case transport.handle_message(info, conn) do
       {:ok, conn, stanza} ->
         Kernel.send(owner, stanza)
         {:noreply, conn}
-      {:error, reason} ->
-        {:stop, reason, conn}
+      {:error, _} = error ->
+        {:disconnect, error, conn}
       :unknown ->
         Logger.info fn ->
-          [inspect(__MODULE__), ?\s, inspect(self()), " received message: " | inspect(msg)]
+          [inspect(__MODULE__), ?\s, inspect(self), " received message: " | inspect(info)]
         end
         {:noreply, conn}
     end
