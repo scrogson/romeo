@@ -106,6 +106,9 @@ defmodule Romeo.Connection do
         {:disconnect, error, error, conn}
     end
   end
+  def handle_call(:close, from, conn) do
+    {:disconnect, {:close, from}, conn}
+  end
 
   def handle_info(info, %{owner: owner, transport: transport} = conn) do
     case transport.handle_message(info, conn) do
