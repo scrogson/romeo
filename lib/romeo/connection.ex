@@ -31,7 +31,7 @@ defmodule Romeo.Connection do
   ### PUBLIC API ###
 
   @doc """
-  Start the connection process and connect to postgres.
+  Start the connection process and connect to an XMPP server.
 
   ## Options
 
