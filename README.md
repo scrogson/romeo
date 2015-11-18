@@ -56,6 +56,11 @@ msg = "See how she leans her cheek upon her hand! " <>
 "Henri-Pierre Picou [Public domain], via Wikimedia Commons")
 **Image credit:** Henri-Pierre Picou [Public domain], via Wikimedia Commons
 
+## Naming
+
+It follows the great tradition to use characters of William Shakespeare's Romeo
+and Juliet in the XMPP specifications.
+
 ## License
 
 The MIT License (MIT)
