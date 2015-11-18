@@ -98,6 +98,9 @@ defmodule Romeo.Connection do
     %{conn | features: %Features{}, parser: nil, socket: nil}
   end
 
+  def handle_call(_, _, %{socket: nil} = conn) do
+    {:reply, {:error, :closed}, conn}
+  end
   def handle_call({:send, data}, _, %{transport: transport} = conn) do
     case transport.send(conn, data) do
       {:ok, conn} ->
