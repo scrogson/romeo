@@ -52,10 +52,6 @@ msg = "See how she leans her cheek upon her hand! " <>
 :ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit", msg))
 ```
 
-![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
-"Henri-Pierre Picou [Public domain], via Wikimedia Commons")
-**Image credit:** Henri-Pierre Picou [Public domain], via Wikimedia Commons
-
 ## Naming
 
 It follows the great tradition to use characters of William Shakespeare's Romeo
@@ -84,3 +80,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+------------
+
+![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
+"Henri-Pierre Picou [Public domain], via Wikimedia Commons")
+**Image credit:** Henri-Pierre Picou [Public domain], via Wikimedia Commons
+
