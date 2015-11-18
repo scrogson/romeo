@@ -59,7 +59,7 @@ defmodule Romeo.Connection do
   Send a message via the underlying transport.
   """
   def send(pid, data) do
-    Connection.cast(pid, {:send, data})
+    Connection.call(pid, {:send, data})
   end
 
   @doc """
@@ -100,7 +100,7 @@ defmodule Romeo.Connection do
 
   def handle_call({:send, data}, _, %{transport: transport} = conn) do
     case transport.send(conn, data) do
-      :ok ->
+      {:ok, conn} ->
         {:reply, :ok, conn}
       {:error, _} = error ->
         {:disconnect, error, error, conn}

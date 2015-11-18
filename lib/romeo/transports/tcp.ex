@@ -152,10 +152,11 @@ defmodule Romeo.Transports.TCP do
   def send(%Conn{socket: {mod, socket}} = conn, stanza) do
     stanza = Stanza.to_xml(stanza)
     Logger.debug fn -> "OUT > #{inspect stanza}" end
-    mod.send(socket, stanza)
-    conn
+    :ok = mod.send(socket, stanza)
+    {:ok, conn}
   end
 
+  def recv({:ok, conn}, fun), do: recv(conn, fun)
   def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, fun) do
     receive do
       {:tcp, ^socket, stanza} ->
