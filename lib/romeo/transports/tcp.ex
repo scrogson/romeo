@@ -55,9 +55,7 @@ defmodule Romeo.Transports.TCP do
     |> authenticate
     |> bind
     |> session
-    |> send_presence
-    |> join_rooms
-    |> done
+    |> complete
   end
 
   defp start_stream(%Conn{jid: jid} = conn) do
@@ -118,23 +116,7 @@ defmodule Romeo.Transports.TCP do
     end)
   end
 
-  defp send_presence(%Conn{jid: jid} = conn) do
-    conn
-    |> send(Stanza.presence)
-    |> recv(fn conn, _packet ->
-      Logger.info fn -> "#{jid} successfully connected." end
-      conn
-    end)
-  end
-
-  defp join_rooms(%Conn{rooms: rooms, nickname: nickname} = conn) do
-    for room <- rooms do
-      send(conn, Stanza.join(room, nickname))
-    end
-    conn
-  end
-
-  defp done(conn) do
+  defp complete(conn) do
     {:ok, conn}
   end
 
