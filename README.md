@@ -27,6 +27,32 @@ def application do
 end
 ```
 
+## Usage
+
+```elixir
+alias Romeo.Stanza
+alias Romeo.Connection, as: Conn
+
+# Minimum configuration options
+opts = [jid: "romeo@montague.lit", password: "iL0v3JuL137", nickname: "romeo"]
+
+# Start the client
+{:ok, pid} = Conn.start_link(opts)
+
+# Send presence to the server
+:ok = Conn.send(pid, Stanza.presence)
+
+# Request your roster
+:ok = Conn.send(pid, Stanza.get_roster)
+
+# Join a chat room
+:ok = Conn.send(pid, Stanza.join("library@muc.montague.lit", "romeo"))
+
+# Send a message to the room
+:ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit",
+"See how she leans her cheek upon her hand! O that I were a glove upon that hand, that I might touch that cheek!"))
+```
+
 ## License
 
 The MIT License (MIT)
