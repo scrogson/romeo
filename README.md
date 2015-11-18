@@ -2,9 +2,6 @@
 
 > XMPP Client
 
-![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
-"Henri-Pierre Picou [Public domain], via Wikimedia Commons")
-
 **NOTE:** This library is a work in progress.
 
 ## Installation
@@ -52,6 +49,10 @@ opts = [jid: "romeo@montague.lit", password: "iL0v3JuL137", nickname: "romeo"]
 :ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit",
 "See how she leans her cheek upon her hand! O that I were a glove upon that hand, that I might touch that cheek!"))
 ```
+
+![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
+"Henri-Pierre Picou [Public domain], via Wikimedia Commons")
+**Image credit:** Henri-Pierre Picou [Public domain], via Wikimedia Commons
 
 ## License
 
