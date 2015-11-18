@@ -46,8 +46,10 @@ opts = [jid: "romeo@montague.lit", password: "iL0v3JuL137", nickname: "romeo"]
 :ok = Conn.send(pid, Stanza.join("library@muc.montague.lit", "romeo"))
 
 # Send a message to the room
-:ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit",
-"See how she leans her cheek upon her hand! O that I were a glove upon that hand, that I might touch that cheek!"))
+msg = "See how she leans her cheek upon her hand! " <>
+      "O that I were a glove upon that hand, that " <>
+      "I might touch that cheek!"
+:ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit", msg))
 ```
 
 ![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
