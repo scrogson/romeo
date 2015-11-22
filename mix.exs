@@ -1,7 +1,7 @@
 defmodule Romeo.Mixfile do
   use Mix.Project
 
-  @version "0.0.0"
+  @version "0.1.0"
 
   def project do
     [app: :romeo,
@@ -13,7 +13,8 @@ defmodule Romeo.Mixfile do
      description: description,
      deps: deps,
      docs: docs,
-     package: package]
+     package: package,
+     test_coverage: [tool: ExCoveralls]]
   end
 
   def application do
@@ -31,7 +32,11 @@ defmodule Romeo.Mixfile do
 
      # Docs deps
      {:earmark, "~> 0.1", only: :dev},
-     {:ex_doc, "~> 0.10", only: :dev}]
+     {:ex_doc, "~> 0.10", only: :dev},
+
+     # Test deps
+     {:ejabberd, github: "processone/ejabberd", tag: "15.10", only: :test},
+     {:excoveralls, "~> 0.4.2", only: :test}]
   end
 
   defp docs do
