@@ -141,10 +141,12 @@ defmodule Romeo.Transports.TCP do
     %{conn | parser: parser}
   end
 
-  defp parse_stanza(%Conn{parser: parser} = conn, stanza) do
-    Logger.debug fn -> "IN > #{inspect stanza}" end
-    {:ok, parser, [stanza|_]} = :exml_stream.parse(parser, stanza)
-    {:ok, %Conn{conn | parser: parser}, stanza}
+  defp parse_stanza(%Conn{jid: jid, owner: owner, parser: parser} = conn, data) do
+    {:ok, parser, stanzas} = :exml_stream.parse(parser, data)
+    for stanza <- stanzas do
+      _ = Kernel.send owner, {:stanza_received, stanza}
+    end
+    {:ok, %Conn{conn | parser: parser}, stanzas}
   end
 
   def send(%Conn{socket: {mod, socket}} = conn, stanza) do
