@@ -19,7 +19,7 @@ defmodule Romeo.Transports.TCP do
 
   @spec connect(Keyword.t) :: {:ok, state} | {:error, any}
   def connect(%Conn{host: host, port: port, socket_opts: socket_opts} = conn) do
-    host = (host || default_host(conn.jid)) |> to_char_list
+    host = (host || host(conn.jid)) |> to_char_list
     port = (port || @default_port)
 
     conn = %{conn | host: host, port: port, socket_opts: socket_opts}
@@ -59,7 +59,8 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp start_stream(%Conn{jid: jid} = conn) do
-    stanza = JID.parse(jid).server |> Stanza.start_stream()
+    stanza = jid |> host |> Romeo.Stanza.start_stream
+
     conn
     |> send(stanza)
     |> recv(fn conn, _packet ->
@@ -220,7 +221,7 @@ defmodule Romeo.Transports.TCP do
     end
   end
 
-  defp default_host(jid) do
-    JID.parse(jid).server
+  defp host(jid) do
+    Romeo.JID.parse(jid).server
   end
 end
