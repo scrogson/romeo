@@ -2,6 +2,9 @@
 
 > XMPP Client
 
+[![Build Status](https://travis-ci.org/scrogson/romeo.svg?branch=master)](https://travis-ci.org/scrogson/romeo)
+[![Coverage Status](https://coveralls.io/repos/scrogson/romeo/badge.svg?branch=master&service=github)](https://coveralls.io/github/scrogson/romeo?branch=master)
+
 **NOTE:** This library is a work in progress.
 
 ## Installation
