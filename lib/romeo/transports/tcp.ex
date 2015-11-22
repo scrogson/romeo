@@ -63,9 +63,7 @@ defmodule Romeo.Transports.TCP do
 
     conn
     |> send(stanza)
-    |> recv(fn conn, _packet ->
-      conn
-    end)
+    |> recv(fn conn, [xmlstreamstart() | []] -> conn end)
   end
 
   defp negotiate_features(conn) do
