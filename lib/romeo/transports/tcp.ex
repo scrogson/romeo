@@ -66,9 +66,9 @@ defmodule Romeo.Transports.TCP do
     |> recv(fn conn, [xmlstreamstart() | []] -> conn end)
   end
 
-  defp negotiate_features(conn) do
-    recv(conn, fn conn, packet ->
-      %Conn{conn | features: Features.parse_stream_features(packet)}
+  defp negotiate_features(%Conn{} = conn) do
+    recv(conn, fn conn, [xmlel(name: "stream:features") = packet | []] ->
+      %{conn | features: Features.parse_stream_features(packet)}
     end)
   end
 
