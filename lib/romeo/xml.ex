@@ -3,6 +3,8 @@ defmodule Romeo.XML do
   Provides functions for building XML stanzas with the `exml` library.
   """
 
+  require Record
+
   defmacro __using__(_opts) do
     quote do
       use Romeo.XMLNS
@@ -19,6 +21,10 @@ defmodule Romeo.XML do
       Record.defrecordp :xmlstreamstart, name: "", attrs: []
       Record.defrecordp :xmlstreamend, name: ""
     end
+  end
+
+  def encode!(record) when Record.is_record(record) do
+    :exml.to_binary(record)
   end
 
   @doc """

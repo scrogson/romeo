@@ -1,5 +1,4 @@
 defmodule Romeo.Stanza do
-
   @moduledoc """
   Provides convenience functions for building XMPP stanzas.
   """
@@ -9,7 +8,9 @@ defmodule Romeo.Stanza do
   @doc """
   Converts an `exml` record to an XML binary string.
   """
-  def to_xml(record) when Record.is_record(record), do: :exml.to_binary(record)
+  def to_xml(record) when Record.is_record(record) do
+    Romeo.XML.encode!(record)
+  end
 
   def to_xml(%IQ{} = stanza) do
     xmlel(name: "iq",

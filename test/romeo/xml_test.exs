@@ -3,6 +3,16 @@ defmodule Romeo.XMLTest do
 
   use Romeo.XML
 
+  test "encode!" do
+    xml = xmlel(name: "message", children: [
+      xmlel(name: "body", children: [
+        xmlcdata(content: "testing")
+      ])
+    ])
+    assert Romeo.XML.encode!(xml) ==
+      ~s(<message><body>testing</body></message>)
+  end
+
   test "attr" do
     xml = xmlel(name: "message", attrs: [{"type", "chat"}])
     assert XML.attr(xml, "type") == "chat"
