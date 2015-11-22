@@ -98,10 +98,23 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp bind(%Conn{resource: resource} = conn) do
+    stanza = Romeo.Stanza.bind(resource)
+    id = Romeo.XML.attr(stanza, "id")
+
     conn
-    |> send(Stanza.bind(resource))
-    |> recv(fn conn, _packet ->
-      conn
+    |> send(stanza)
+    |> recv(fn conn, [xmlel(name: "iq") = stanza | []] ->
+      "result" = Romeo.XML.attr(stanza, "type")
+      ^id = Romeo.XML.attr(stanza, "id")
+
+      %Romeo.JID{resource: resource} =
+        stanza
+        |> Romeo.XML.subelement("bind")
+        |> Romeo.XML.subelement("jid")
+        |> Romeo.XML.cdata
+        |> Romeo.JID.parse
+
+      %{conn | resource: resource}
     end)
   end
 
