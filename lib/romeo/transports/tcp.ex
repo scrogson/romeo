@@ -119,9 +119,15 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp session(%Conn{} = conn) do
+    stanza = Romeo.Stanza.session
+    id = Romeo.XML.attr(stanza, "id")
+
     conn
-    |> send(Stanza.session)
-    |> recv(fn conn, _packet ->
+    |> send(stanza)
+    |> recv(fn conn, [xmlel(name: "iq") = stanza | []] ->
+      "result" = Romeo.XML.attr(stanza, "type")
+      ^id = Romeo.XML.attr(stanza, "id")
+
       conn
     end)
   end
