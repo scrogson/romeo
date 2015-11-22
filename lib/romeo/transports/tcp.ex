@@ -55,7 +55,7 @@ defmodule Romeo.Transports.TCP do
     |> authenticate
     |> bind
     |> session
-    |> complete
+    |> ready
   end
 
   defp start_stream(%Conn{jid: jid} = conn) do
@@ -132,7 +132,8 @@ defmodule Romeo.Transports.TCP do
     end)
   end
 
-  defp complete(conn) do
+  defp ready(%Conn{owner: owner} = conn) do
+    _ = Kernel.send(owner, :connection_ready)
     {:ok, conn}
   end
 
