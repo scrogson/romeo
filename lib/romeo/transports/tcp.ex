@@ -96,6 +96,7 @@ defmodule Romeo.Transports.TCP do
     |> Romeo.Auth.authenticate!
     |> reset_parser
     |> start_stream
+    |> negotiate_features
   end
 
   defp bind(%Conn{resource: resource} = conn) do
