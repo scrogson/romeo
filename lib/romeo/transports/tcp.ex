@@ -75,9 +75,7 @@ defmodule Romeo.Transports.TCP do
   defp start_tls(%Conn{features: %Features{tls?: true}} = conn) do
     conn
     |> send(Stanza.start_tls)
-    |> recv(fn conn, _packet ->
-      conn
-    end)
+    |> recv(fn conn, [xmlel(name: "proceed") | []] -> conn end)
     |> upgrade_to_tls
     |> start_stream
     |> negotiate_features
