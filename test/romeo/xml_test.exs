@@ -2,6 +2,7 @@ defmodule Romeo.XMLTest do
   use ExUnit.Case, async: true
 
   use Romeo.XML
+  import Romeo.XML
 
   test "encode!" do
     xml = xmlel(name: "message", children: [
@@ -9,15 +10,15 @@ defmodule Romeo.XMLTest do
         xmlcdata(content: "testing")
       ])
     ])
-    assert Romeo.XML.encode!(xml) ==
+    assert encode!(xml) ==
       ~s(<message><body>testing</body></message>)
   end
 
   test "attr" do
     xml = xmlel(name: "message", attrs: [{"type", "chat"}])
-    assert XML.attr(xml, "type") == "chat"
-    assert XML.attr(xml, "non-existent") == nil
-    assert XML.attr(xml, "non-existent", "default") == "default"
+    assert attr(xml, "type") == "chat"
+    assert attr(xml, "non-existent") == nil
+    assert attr(xml, "non-existent", "default") == "default"
   end
 
   test "subelement" do
@@ -26,7 +27,7 @@ defmodule Romeo.XMLTest do
         xmlcdata(content: "testing")
       ])
     ])
-    assert XML.subelement(xml, "body") ==
+    assert subelement(xml, "body") ==
       {:xmlel, "body", [], [xmlcdata(content: "testing")]}
   end
 
@@ -34,13 +35,13 @@ defmodule Romeo.XMLTest do
     body = xmlel(name: "body", children: [
       xmlcdata(content: "testing")
     ])
-    assert XML.cdata(body) == "testing"
+    assert cdata(body) == "testing"
   end
 
   test "empty cdata" do
     body = xmlel(name: "body", children: [
       xmlcdata(content: "testing")
     ])
-    assert XML.cdata(body) == "testing"
+    assert cdata(body) == "testing"
   end
 end

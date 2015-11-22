@@ -4,6 +4,7 @@ defmodule Romeo.Stanza.Parser do
   """
   use Romeo.XML
   alias Romeo.JID
+  import Romeo.XML
 
   def parse(xmlel(name: "message", attrs: attrs, children: children) = stanza) do
     struct(Message, parse_attrs(attrs))
@@ -68,7 +69,8 @@ defmodule Romeo.Stanza.Parser do
 
   defp delayed?(xmlel(children: children)) do
     Enum.any? children, fn child ->
-      elem(child, 1) == "delay" || elem(child, 1) == "x" && XML.attr(child, "xmlns") == "jabber:x:delay"
+      elem(child, 1) == "delay" || elem(child, 1) == "x" &&
+        attr(child, "xmlns") == "jabber:x:delay"
     end
   end
 end

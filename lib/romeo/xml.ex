@@ -9,8 +9,6 @@ defmodule Romeo.XML do
     quote do
       use Romeo.XMLNS
       require Record
-      import unquote __MODULE__
-      alias unquote __MODULE__
       alias Romeo.Stanza
       alias Romeo.Stanza.IQ
       alias Romeo.Stanza.Message
