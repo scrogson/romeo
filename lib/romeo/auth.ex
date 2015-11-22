@@ -4,6 +4,7 @@ defmodule Romeo.Auth do
   """
 
   use Romeo.XML
+  require Logger
 
   defmodule Error do
     defexception [:message]
@@ -26,6 +27,7 @@ defmodule Romeo.Auth do
   end
 
   defp do_authenticate(mechanism, conn) do
+    Logger.info fn -> "Authenticating with #{mechanism}" end
     authenticate_with(mechanism, conn)
     case success?(conn) do
       {:ok, conn} -> conn
@@ -56,10 +58,13 @@ defmodule Romeo.Auth do
   end
 
   defp success?(%{transport: mod} = conn) do
-    mod.recv(conn, fn conn, packet ->
-      case xmlel(packet, :name) do
-        "success" -> {:ok, conn}
-        "failure" -> {:error, conn}
+    mod.recv(conn, fn conn, [xmlel(name: name) | []] ->
+      case name do
+        "success" ->
+          Logger.info fn -> "Authenticated successfully" end
+          {:ok, conn}
+        "failure" ->
+          {:error, conn}
       end
     end)
   end

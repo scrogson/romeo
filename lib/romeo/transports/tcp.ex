@@ -25,7 +25,7 @@ defmodule Romeo.Transports.TCP do
 
     case :gen_tcp.connect(host, port, socket_opts ++ @socket_opts, conn.timeout) do
       {:ok, socket} ->
-        Logger.info fn -> "Connected to server" end
+        Logger.info fn -> "Established connection to #{host}" end
         {:ok, parser} = :exml_stream.new_parser
         start_protocol(%{conn | parser: parser, socket: {:gen_tcp, socket}})
       {:error, _} = error ->
@@ -82,10 +82,12 @@ defmodule Romeo.Transports.TCP do
   defp start_tls(%Conn{} = conn), do: conn
 
   defp upgrade_to_tls(%Conn{socket: {:gen_tcp, socket}} = conn) do
-    Logger.info fn -> "Upgrading connection to TLS" end
+    Logger.info fn -> "Negotiating secure connection" end
+
     {:ok, socket} = :ssl.connect(socket, conn.ssl_opts ++ @ssl_opts)
     {:ok, parser} = :exml_stream.new_parser
-    Logger.info fn -> "Connection secured" end
+
+    Logger.info fn -> "Connection successfully secured" end
     %{conn | socket: {:ssl, socket}, parser: parser}
   end
 
@@ -113,6 +115,7 @@ defmodule Romeo.Transports.TCP do
         |> Romeo.XML.cdata
         |> Romeo.JID.parse
 
+      Logger.info fn -> "Bound to resource: #{resource}" end
       %{conn | resource: resource}
     end)
   end
@@ -127,6 +130,7 @@ defmodule Romeo.Transports.TCP do
       "result" = Romeo.XML.attr(stanza, "type")
       ^id = Romeo.XML.attr(stanza, "id")
 
+      Logger.info fn -> "Session established" end
       conn
     end)
   end
@@ -144,14 +148,15 @@ defmodule Romeo.Transports.TCP do
   defp parse_stanza(%Conn{jid: jid, owner: owner, parser: parser} = conn, data) do
     {:ok, parser, stanzas} = :exml_stream.parse(parser, data)
     for stanza <- stanzas do
+      Logger.debug fn -> "[#{jid}][INCOMING] #{inspect Romeo.XML.encode!(stanza)}" end
       _ = Kernel.send owner, {:stanza_received, stanza}
     end
     {:ok, %Conn{conn | parser: parser}, stanzas}
   end
 
-  def send(%Conn{socket: {mod, socket}} = conn, stanza) do
-    Logger.debug fn -> "OUT > #{inspect stanza}" end
+  def send(%Conn{jid: jid, socket: {mod, socket}} = conn, stanza) do
     stanza = Romeo.XML.encode!(stanza)
+    Logger.debug fn -> "[#{jid}][OUTGOING] #{inspect stanza}" end
     :ok = mod.send(socket, stanza)
     {:ok, conn}
   end
