@@ -7,9 +7,8 @@ defmodule Romeo.Transports.TCP do
 
   @type state :: Romeo.Connection.t
 
-  alias Romeo.JID
-  alias Romeo.Auth
-  alias Romeo.Stanza
+  use Romeo.XML
+
   alias Romeo.Connection.Features
   alias Romeo.Connection, as: Conn
 
@@ -92,7 +91,7 @@ defmodule Romeo.Transports.TCP do
 
   defp authenticate(%Conn{} = conn) do
     conn
-    |> Auth.authenticate!
+    |> Romeo.Auth.authenticate!
     |> reset_parser
     |> start_stream
   end
@@ -151,8 +150,8 @@ defmodule Romeo.Transports.TCP do
   end
 
   def send(%Conn{socket: {mod, socket}} = conn, stanza) do
-    stanza = Stanza.to_xml(stanza)
     Logger.debug fn -> "OUT > #{inspect stanza}" end
+    stanza = Romeo.XML.encode!(stanza)
     :ok = mod.send(socket, stanza)
     {:ok, conn}
   end

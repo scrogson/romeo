@@ -5,9 +5,6 @@ defmodule Romeo.Auth do
 
   use Romeo.XML
 
-  alias Romeo.JID
-  alias Romeo.Stanza
-
   defmodule Error do
     defexception [:message]
 
@@ -39,7 +36,7 @@ defmodule Romeo.Auth do
   defp authenticate_with("PLAIN", %{transport: mod} = conn) do
     [username, password] = get_client_credentials(conn)
     payload = <<0>> <> username <> <<0>> <> password
-    mod.send(conn, Stanza.auth("PLAIN", Stanza.base64_cdata(payload)))
+    mod.send(conn, Romeo.Stanza.auth("PLAIN", Romeo.Stanza.base64_cdata(payload)))
   end
 
   defp authenticate_with("DIGEST-MD5", _conn) do
@@ -51,7 +48,7 @@ defmodule Romeo.Auth do
   end
 
   defp authenticate_with("ANONYMOUS", %{transport: mod} = conn) do
-    conn |> mod.send(Stanza.auth("ANONYMOUS"))
+    conn |> mod.send(Romeo.Stanza.auth("ANONYMOUS"))
   end
 
   defp authenticate_with("EXTERNAL", _conn) do
@@ -68,7 +65,7 @@ defmodule Romeo.Auth do
   end
 
   defp get_client_credentials(%{jid: jid, password: password}) do
-    [JID.parse(jid).user, password]
+    [Romeo.JID.parse(jid).user, password]
   end
 
   defp preferred_mechanism([], _), do: "PLAIN"
