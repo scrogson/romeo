@@ -80,17 +80,17 @@ defmodule Romeo.Transports.TCP do
     |> start_stream
     |> negotiate_features
   end
-  defp start_tls(conn), do: conn
+  defp start_tls(%Conn{} = conn), do: conn
 
   defp upgrade_to_tls(%Conn{socket: {:gen_tcp, socket}} = conn) do
     Logger.info fn -> "Upgrading connection to TLS" end
     {:ok, socket} = :ssl.connect(socket, conn.ssl_opts ++ @ssl_opts)
     {:ok, parser} = :exml_stream.new_parser
     Logger.info fn -> "Connection secured" end
-    %Conn{conn | socket: {:ssl, socket}, parser: parser}
+    %{conn | socket: {:ssl, socket}, parser: parser}
   end
 
-  defp authenticate(conn) do
+  defp authenticate(%Conn{} = conn) do
     conn
     |> Auth.authenticate!
     |> reset_parser
