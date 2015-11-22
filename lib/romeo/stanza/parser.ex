@@ -3,7 +3,6 @@ defmodule Romeo.Stanza.Parser do
   Parses XML records into related structs.
   """
   use Romeo.XML
-  alias Romeo.JID
   import Romeo.XML
 
   def parse(xmlel(name: "message", attrs: attrs, children: children) = stanza) do
@@ -47,7 +46,7 @@ defmodule Romeo.Stanza.Parser do
   defp parse_attrs([], acc), do: acc
 
   defp parse_attr({key, value}) when key in ["to", "from", "jid"] do
-    {String.to_atom(key), JID.parse(value)}
+    {String.to_atom(key), Romeo.JID.parse(value)}
   end
   defp parse_attr({key, value}) do
     {String.to_atom(key), value}
