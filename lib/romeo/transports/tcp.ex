@@ -99,7 +99,7 @@ defmodule Romeo.Transports.TCP do
     |> negotiate_features
   end
 
-  defp bind(%Conn{resource: resource} = conn) do
+  defp bind(%Conn{owner: owner, resource: resource} = conn) do
     stanza = Romeo.Stanza.bind(resource)
     id = Romeo.XML.attr(stanza, "id")
 
@@ -117,6 +117,7 @@ defmodule Romeo.Transports.TCP do
         |> Romeo.JID.parse
 
       Logger.info fn -> "Bound to resource: #{resource}" end
+      Kernel.send(owner, {:resource_bound, resource})
       %{conn | resource: resource}
     end)
   end
@@ -137,7 +138,7 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp ready(%Conn{owner: owner} = conn) do
-    _ = Kernel.send(owner, :connection_ready)
+    Kernel.send(owner, :connection_ready)
     {:ok, conn}
   end
 
