@@ -41,4 +41,19 @@ defmodule Romeo.ConnectionTest do
     assert_receive {:resource_bound, _}
     assert_receive :connection_ready
   end
+
+  test "sending presence", %{romeo: romeo} do
+    {:ok, pid} = Romeo.Connection.start_link(romeo)
+
+    assert_receive :connection_ready
+
+    assert :ok = Romeo.Connection.send(pid, Romeo.Stanza.presence)
+    assert_receive {:stanza_received, xmlel(name: "presence") = presence}
+    assert attr(presence, "from") == "romeo@localhost/romeo"
+    assert attr(presence, "to") == "romeo@localhost/romeo"
+
+    assert :ok = Romeo.Connection.send(pid, Romeo.Stanza.join("lobby@conference.localhost", "romeo"))
+    assert_receive {:stanza_received, xmlel(name: "presence") = presence}
+    assert attr(presence, "from") == "lobby@conference.localhost/romeo"
+  end
 end
