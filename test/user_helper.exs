@@ -28,4 +28,9 @@ defmodule UserHelper do
   def unregister_user(username) do
     :ejabberd_admin.unregister(username, "localhost")
   end
+
+  def setup_presence_subscriptions(user1, user2) do
+    :mod_admin_extra.add_rosteritem(user1, "localhost", user2, "localhost", user2, "buddies", "both")
+    :mod_admin_extra.add_rosteritem(user2, "localhost", user1, "localhost", user1, "buddies", "both")
+  end
 end
