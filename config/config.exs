@@ -8,4 +8,4 @@ config :sasl, sasl_error_logger: false
 
 config :ejabberd,
   file: "config/ejabberd.yml",
-  log: 'logs/ejabberd.log'
+  log_path: "logs/ejabberd.log"
