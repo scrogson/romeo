@@ -4,22 +4,34 @@ defmodule Romeo.ConnectionTest do
   use Romeo.XML
   import Romeo.XML
 
-  setup do
-    romeo = register_user("romeo")
-    juliet = register_user("juliet")
-    Application.put_env(:ex_unit, :assert_receive_timeout, 500)
-    {:ok, romeo: romeo, juliet: juliet}
-  end
+  test "connection no TLS" do
+    romeo = build_user("romeo")
 
-  test "connection no TLS", %{romeo: romeo} do
     {:ok, pid} = Romeo.Connection.start_link(romeo)
 
-    assert_receive {:stanza_received, {:xmlstreamstart, "stream:stream", _}}
-    assert_receive {:stanza_received, {:xmlel, "stream:features", _, _}}
-    assert_receive {:stanza_received, {:xmlel, "success", _, _}}
-    assert_receive {:stanza_received, {:xmlstreamstart, "stream:stream", _}}
-    assert_receive {:stanza_received, {:xmlel, "stream:features", _, _}}
-    assert_receive {:resource_bound, _}, 500
+    assert_receive {:stanza_received, xmlstreamstart()}
+    assert_receive {:stanza_received, xmlel(name: "stream:features")}
+    assert_receive {:stanza_received, xmlel(name: "success")}
+    assert_receive {:stanza_received, xmlstreamstart()}
+    assert_receive {:stanza_received, xmlel(name: "stream:features")}
+    assert_receive {:resource_bound, _}
+    assert_receive :connection_ready
+  end
+
+  test "connection TLS" do
+    romeo = build_user("romeo", tls: true)
+
+    {:ok, pid} = Romeo.Connection.start_link(romeo)
+
+    assert_receive {:stanza_received, xmlstreamstart()}
+    assert_receive {:stanza_received, xmlel(name: "stream:features")}
+    assert_receive {:stanza_received, xmlel(name: "proceed")}
+    assert_receive {:stanza_received, xmlstreamstart()}
+    assert_receive {:stanza_received, xmlel(name: "stream:features")}
+    assert_receive {:stanza_received, xmlel(name: "success")}
+    assert_receive {:stanza_received, xmlstreamstart()}
+    assert_receive {:stanza_received, xmlel(name: "stream:features")}
+    assert_receive {:resource_bound, _}
     assert_receive :connection_ready
   end
 end
