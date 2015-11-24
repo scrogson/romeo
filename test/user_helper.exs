@@ -10,7 +10,7 @@ defmodule UserHelper do
   def build_user(username, opts \\ []) do
     {password, opts} = Keyword.pop(opts, :password, "password")
     {resource, opts} = Keyword.pop(opts, :resource, "romeo")
-    {tls, opts} = Keyword.pop(opts, :tls, false)
+    {tls, _opts} = Keyword.pop(opts, :tls, false)
 
     register_user(username, password)
 
