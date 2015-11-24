@@ -14,7 +14,7 @@ listen:
     port: 52225
     module: ejabberd_c2s
     starttls_required: true
-    certfile: "/path/to/certfile.pem"
+    certfile: "<%= cwd %>/priv/ssl/ejabberd.pem"
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
