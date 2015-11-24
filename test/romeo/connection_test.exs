@@ -56,4 +56,16 @@ defmodule Romeo.ConnectionTest do
     assert_receive {:stanza_received, xmlel(name: "presence") = presence}
     assert attr(presence, "from") == "lobby@conference.localhost/romeo"
   end
+
+  test "resource conflict", %{romeo: romeo} do
+    {:ok, pid1} = Romeo.Connection.start_link(romeo)
+    assert_receive :connection_ready
+    assert :ok = Romeo.Connection.send(pid1, Romeo.Stanza.presence)
+
+    {:ok, pid2} = Romeo.Connection.start_link(romeo)
+    assert_receive :connection_ready
+    assert :ok = Romeo.Connection.send(pid2, Romeo.Stanza.presence)
+
+    assert_receive {:stanza_received, xmlel(name: "stream:error") = error}
+  end
 end
