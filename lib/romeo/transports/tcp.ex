@@ -57,12 +57,18 @@ defmodule Romeo.Transports.TCP do
     |> ready
   end
 
-  defp start_stream(%Conn{jid: jid} = conn) do
+  defp start_stream(%Conn{jid: jid, socket: {mod, socket}} = conn) do
     stanza = jid |> host |> Romeo.Stanza.start_stream
 
     conn
     |> send(stanza)
-    |> recv(fn conn, [xmlstreamstart() | []] -> conn end)
+    |> recv(fn
+      conn, [xmlstreamstart(), xmlel(name: "stream:features") = features | []] ->
+        Kernel.send(self, {tcp_tag(mod), socket, features})
+        conn
+      conn, [xmlstreamstart() | []] ->
+        conn
+    end)
   end
 
   defp negotiate_features(%Conn{} = conn) do
@@ -147,13 +153,23 @@ defmodule Romeo.Transports.TCP do
     %{conn | parser: parser}
   end
 
-  defp parse_stanza(%Conn{jid: jid, owner: owner, parser: parser} = conn, data) do
-    {:ok, parser, stanzas} = :exml_stream.parse(parser, data)
+  defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data) do
+    {conn, stanzas} =
+      cond do
+        is_binary(data) ->
+          {:ok, parser, stanzas} = :exml_stream.parse(parser, data)
+          {%{conn | parser: parser}, stanzas}
+        xmlel() = data ->
+          {conn, [data]}
+        true -> {conn, []}
+      end
+
     for stanza <- stanzas do
       Logger.debug fn -> "[#{jid}][INCOMING] #{inspect Romeo.XML.encode!(stanza)}" end
-      _ = Kernel.send owner, {:stanza_received, stanza}
+      Kernel.send(owner, {:stanza_received, stanza})
     end
-    {:ok, %Conn{conn | parser: parser}, stanzas}
+
+    {:ok, conn, stanzas}
   end
 
   def send(%Conn{jid: jid, socket: {mod, socket}} = conn, stanza) do
@@ -166,31 +182,31 @@ defmodule Romeo.Transports.TCP do
   def recv({:ok, conn}, fun), do: recv(conn, fun)
   def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, fun) do
     receive do
-      {:tcp, ^socket, stanza} ->
+      {:tcp, ^socket, data} ->
         :inet.setopts(socket, active: :once)
-        {:ok, conn, stanzas} = parse_stanza(conn, stanza)
+        {:ok, conn, stanzas} = parse_data(conn, data)
         fun.(conn, stanzas)
       {:tcp_closed, ^socket} ->
         {:error, :closed}
       {:tcp_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      _ = Kernel.send(self, {:error, :timeout})
+      Kernel.send(self, {:error, :timeout})
       conn
     end
   end
   def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, fun) do
     receive do
-      {:ssl, ^socket, stanza} ->
+      {:ssl, ^socket, data} ->
         :ssl.setopts(socket, active: :once)
-        {:ok, conn, stanzas} = parse_stanza(conn, stanza)
+        {:ok, conn, stanzas} = parse_data(conn, data)
         fun.(conn, stanzas)
       {:ssl_closed, ^socket} ->
         {:error, :closed}
       {:ssl_error, ^socket, reason} ->
         {:error, reason}
     after timeout ->
-      _ = Kernel.send(self, {:error, :timeout})
+      Kernel.send(self, {:error, :timeout})
       conn
     end
   end
@@ -215,9 +231,9 @@ defmodule Romeo.Transports.TCP do
   end
   def handle_message(_, _), do: :unknown
 
-  defp handle_data(msg, %{socket: socket} = conn) do
+  defp handle_data(data, %{socket: socket} = conn) do
     :ok = activate(socket)
-    {:ok, _conn, _stanza} = parse_stanza(conn, msg)
+    {:ok, _conn, _stanza} = parse_data(conn, data)
   end
 
   defp activate({:gen_tcp, socket}) do
@@ -248,4 +264,7 @@ defmodule Romeo.Transports.TCP do
   defp host(jid) do
     Romeo.JID.parse(jid).server
   end
+
+  defp tcp_tag(:gen_tcp), do: :tcp
+  defp tcp_tag(:ssl), do: :ssl
 end
