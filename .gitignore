@@ -6,3 +6,4 @@ erl_crash.dump
 /mnesia
 /logs
 /config/ejabberd.yml
+/doc
