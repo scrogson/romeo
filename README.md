@@ -9,13 +9,12 @@
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-1. Add romeo to your list of dependencies in `mix.exs`:
+1. Add romeo and exml to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:romeo, "~> 0.0.1"}]
+  [{:romeo, "~> 0.0.1"},
+   {:exml, github: "esl/exml"}]
 end
 ```
 
