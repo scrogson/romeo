@@ -54,6 +54,10 @@ msg = "See how she leans her cheek upon her hand! " <>
 :ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit", msg))
 ```
 
+## Documentation
+
+Documentation is available on [hexdocs](http://hexdocs.pm/romeo/)
+
 ## Naming
 
 It follows the great tradition to use characters of William Shakespeare's Romeo
