@@ -4,4 +4,4 @@
 
 ## v0.1.0
 
-Initial release :party:
+Initial release :tada:
