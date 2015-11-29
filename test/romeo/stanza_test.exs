@@ -88,7 +88,7 @@ defmodule Romeo.StanzaTest do
     assert Stanza.message("test@localhost", "chat", "Hello") |> Stanza.to_xml =~
       ~r"<message to='test@localhost' type='chat' id='(.*)' xml:lang='en'><body>Hello</body></message>"
   end
-
+  
   test "message map" do
     msg = %{"to" => "test@localhost", "type" => "chat", "body" => "Hello"}
     assert Stanza.message(msg) |> Stanza.to_xml =~
