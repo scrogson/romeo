@@ -51,6 +51,11 @@ defmodule Romeo.StanzaTest do
       "<auth xmlns='#{ns_sasl}' mechanism='PLAIN'>AHVzZXJuYW1lAHBhc3N3b3Jk</auth>"
   end
 
+  test "auth" do
+    assert Stanza.auth("PLAIN") |> Stanza.to_xml ==
+      "<auth xmlns='#{ns_sasl}' mechanism='PLAIN'></auth>"
+  end
+
   test "bind" do
     assert Stanza.bind("hedwig") |> Stanza.to_xml =~
       ~r"<iq type='set' id='(.*)'><bind xmlns='#{ns_bind}'><resource>hedwig</resource></bind></iq>"
@@ -64,6 +69,10 @@ defmodule Romeo.StanzaTest do
   test "presence" do
     assert Stanza.presence |> Stanza.to_xml == "<presence/>"
   end
+  
+  test "presence/1" do
+    assert Stanza.presence("subscribe") |> Stanza.to_xml == "<presence type='subscribe'/>"
+  end
 
   test "presence/2" do
     assert Stanza.presence("room@muc.localhost/nick", "unavailable") |> Stanza.to_xml ==
@@ -73,5 +82,41 @@ defmodule Romeo.StanzaTest do
   test "message" do
     assert Stanza.message("test@localhost", "chat", "Hello") |> Stanza.to_xml =~
       ~r"<message to='test@localhost' type='chat' id='(.*)' xml:lang='en'><body>Hello</body></message>"
+  end
+
+  test "message map" do
+    msg = %{"to" => "test@localhost", "type" => "chat", "body" => "Hello"}
+    assert Stanza.message(msg) |> Stanza.to_xml =~
+      ~r"<message to='test@localhost' type='chat' id='(.*)' xml:lang='en'><body>Hello</body></message>"
+  end
+  
+  test "normal chat" do
+    assert Stanza.normal("test@localhost", "Hello") |> Stanza.to_xml =~
+      ~r"<message to='test@localhost' type='normal' id='(.*)' xml:lang='en'><body>Hello</body></message>"
+  end
+
+  test "group chat" do
+    assert Stanza.groupchat("test@localhost", "Hello") |> Stanza.to_xml =~
+      ~r"<message to='test@localhost' type='groupchat' id='(.*)' xml:lang='en'><body>Hello</body></message>"
+  end
+
+  test "get_roster" do
+    assert Stanza.get_roster |> Stanza.to_xml =~
+      ~r"<iq type='get' id='(.*)'><query xmlns='#{ns_roster}'/></iq>"
+  end
+
+  test "get_vcard" do
+    assert Stanza.get_vcard("test@localhost") |> Stanza.to_xml =~
+    ~r"<iq to='test@localhost' type='get' id='(.*)'><vCard xmlns='vcard-temp'/></iq>"
+  end
+
+  test "disco_info" do
+    assert Stanza.disco_info("test@localhost") |> Stanza.to_xml =~
+    ~r"<iq to='test@localhost' type='get' id='(.*)'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>"
+  end
+
+  test "disco_items" do
+    assert Stanza.disco_items("test@localhost") |> Stanza.to_xml =~
+    ~r"<iq to='test@localhost' type='get' id='(.*)'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>"
   end
 end
