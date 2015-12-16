@@ -11,9 +11,7 @@ defmodule Romeo.Stanza.Message do
     body: binary | list,
     html: binary | list | nil,
     payload: list,
-    delayed?: boolean,
-    client: pid,
-    matches: list | %{} | nil
+    delayed?: boolean
   }
 
   defstruct [
@@ -24,8 +22,6 @@ defmodule Romeo.Stanza.Message do
     body: "",
     html: nil,
     payload: [],
-    delayed?: false,
-    client: nil,
-    matches: nil
+    delayed?: false
   ]
 end

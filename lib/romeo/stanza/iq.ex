@@ -8,9 +8,7 @@ defmodule Romeo.Stanza.IQ do
     to: jid,
     from: jid,
     type: binary,
-    payload: list,
-    client: pid,
-    matches: nil
+    payload: list
   }
 
   defstruct [
@@ -18,8 +16,6 @@ defmodule Romeo.Stanza.IQ do
     to:       nil,
     from:     nil,
     type:     nil,
-    payload: [],
-    client:   nil,
-    matches:  nil
+    payload: []
   ]
 end
