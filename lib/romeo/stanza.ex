@@ -31,7 +31,7 @@ defmodule Romeo.Stanza do
     ) |> to_xml
   end
 
-  def to_xml(%Message{to: to, type: type, body: body} = stanza) do
+  def to_xml(%Message{to: to, type: type, body: body}) do
     message(to_string(to), type, body) |> to_xml
   end
 

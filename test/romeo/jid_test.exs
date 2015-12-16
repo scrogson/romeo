@@ -25,15 +25,15 @@ defmodule Romeo.JidTest do
 
   test "it converts binaries into structs" do
     string = "jdoe@example.com"
-    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com"}
+    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com", full: string}
 
     string = "jdoe@example.com/library"
-    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com", resource: "library"}
+    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com", resource: "library", full: string}
 
     string = "jdoe@example.com/jdoe@example.com/resource"
-    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com", resource: "jdoe@example.com/resource"}
+    assert JID.parse(string) == %JID{user: "jdoe", server: "example.com", resource: "jdoe@example.com/resource", full: string}
 
     string = "example.com"
-    assert JID.parse(string) == %JID{user: "", server: "example.com", resource: ""}
+    assert JID.parse(string) == %JID{user: "", server: "example.com", resource: "", full: "example.com"}
   end
 end

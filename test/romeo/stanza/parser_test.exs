@@ -20,8 +20,8 @@ defmodule Romeo.Stanza.ParserTest do
     parsed = Parser.parse(@iq)
     assert parsed.type == "result"
     assert parsed.id == "b0e3"
-    assert parsed.to == %Romeo.JID{user: "scrogson", server: "im.test.dev", resource: "issues"}
-    assert parsed.from == %Romeo.JID{user: "", server: "im.test.dev", resource: ""}
+    assert %Romeo.JID{user: "scrogson", server: "im.test.dev", resource: "issues"} = parsed.to
+    assert %Romeo.JID{user: "", server: "im.test.dev", resource: ""} = parsed.from
     [payload] = parsed.payload
     assert %{name: "query", xmlns: "http://jabber.org/protocol/disco#items"} = payload
     assert Enum.count(payload.payload) == 2

@@ -78,10 +78,10 @@ defmodule Romeo.JID do
 
   ## Examples
       iex> Romeo.JID.parse("romeo@montague.lit/chamber")
-      %Romeo.JID{user: "romeo", server: "montague.lit", resource: "chamber"}
+      %Romeo.JID{user: "romeo", server: "montague.lit", resource: "chamber", full: "romeo@montague.lit/chamber"}
 
       iex> Romeo.JID.parse("romeo@montague.lit")
-      %Romeo.JID{user: "romeo", server: "montague.lit", resource: ""}
+      %Romeo.JID{user: "romeo", server: "montague.lit", resource: "", full: "romeo@montague.lit"}
   """
   @spec parse(jid :: binary) :: JID.t
   def parse(string) do
