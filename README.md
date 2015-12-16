@@ -11,7 +11,7 @@
 
 ```elixir
 def deps do
-  [{:romeo, "~> 0.1.0"},
+  [{:romeo, "~> 0.2.0"},
    {:exml, github: "esl/exml"}]
 end
 ```
