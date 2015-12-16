@@ -24,6 +24,9 @@ defmodule Romeo.XML do
   def encode!(record) when Record.is_record(record) do
     :exml.to_binary(record)
   end
+  def encode!(stanza) do
+    Romeo.Stanza.to_xml(stanza)
+  end
 
   @doc """
   Returns the given attribute value or default.
