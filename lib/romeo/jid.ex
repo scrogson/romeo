@@ -21,7 +21,7 @@ defmodule Romeo.JID do
   alias Romeo.JID
 
   @type t :: %__MODULE__{}
-  defstruct user: "", server: "", resource: ""
+  defstruct user: "", server: "", resource: "", full: ""
 
 
   @doc """
@@ -61,6 +61,17 @@ defmodule Romeo.JID do
   def bare(jid) when is_binary(jid), do: parse(jid) |> bare
   def bare(%JID{} = jid), do: to_string(%JID{jid | resource: ""})
 
+  @spec user(jid :: binary | JID.t) :: binary
+  def user(jid) when is_binary(jid), do: parse(jid).user
+  def user(%JID{user: user}), do: user
+
+  @spec server(jid :: binary | JID.t) :: binary
+  def server(jid) when is_binary(jid), do: parse(jid).server
+  def server(%JID{server: server}), do: server
+
+  @spec resource(jid :: binary | JID.t) :: binary
+  def resource(jid) when is_binary(jid), do: parse(jid).resource
+  def resource(%JID{resource: resource}), do: resource
 
   @doc """
   Parses a binary string JID into a JID struct.
@@ -76,11 +87,11 @@ defmodule Romeo.JID do
   def parse(string) do
     case String.split(string, ["@", "/"], parts: 3) do
       [user, server, resource] ->
-        %JID{user: user, server: server, resource: resource}
+        %JID{user: user, server: server, resource: resource, full: string}
       [user, server] ->
-        %JID{user: user, server: server}
+        %JID{user: user, server: server, full: string}
       [server] ->
-        %JID{server: server}
+        %JID{server: server, full: string}
     end
   end
 end
