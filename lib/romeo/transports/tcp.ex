@@ -153,7 +153,7 @@ defmodule Romeo.Transports.TCP do
     %{conn | parser: parser}
   end
 
-  defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data) do
+  defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data, send_to_owner \\ false) do
     {conn, stanzas} =
       cond do
         is_binary(data) ->
@@ -166,7 +166,9 @@ defmodule Romeo.Transports.TCP do
 
     for stanza <- stanzas do
       Logger.debug fn -> "[#{jid}][INCOMING] #{inspect Romeo.XML.encode!(stanza)}" end
-      Kernel.send(owner, {:stanza_received, stanza})
+      if send_to_owner do
+        Kernel.send(owner, {:stanza, stanza})
+      end
     end
 
     {:ok, conn, stanzas}
@@ -233,7 +235,7 @@ defmodule Romeo.Transports.TCP do
 
   defp handle_data(data, %{socket: socket} = conn) do
     :ok = activate(socket)
-    {:ok, _conn, _stanza} = parse_data(conn, data)
+    {:ok, _conn, _stanzas} = parse_data(conn, data, false)
   end
 
   defp activate({:gen_tcp, socket}) do
