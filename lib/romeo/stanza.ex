@@ -31,6 +31,10 @@ defmodule Romeo.Stanza do
     ) |> to_xml
   end
 
+  def to_xml(%Message{to: to, type: type, body: body} = stanza) do
+    message(to_string(to), type, body) |> to_xml
+  end
+
   @doc """
   Starts an XML stream.
 
