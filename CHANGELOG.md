@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0
+
+- Backwards incompatible changes
+  - Removed `payload` key in favor of `xml` in the `Message`, `Presence`, and
+    `IQ` stanzas. The full `xmlel` record is now stored in the `xml` key. This
+    allows easy access via the functions in `Romeo.XML` module.
+  - Messages generated with `Romeo.Stanza.message/3` no longer escape the body
+    by default.
+
 ## v0.2.0
 
 - Enhancements
