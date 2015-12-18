@@ -245,7 +245,7 @@ defmodule Romeo.Stanza do
   def body(data) do
     xmlel(name: "body",
       children: [
-        :exml.escape_cdata(data)
+        cdata(data)
       ])
   end
 
