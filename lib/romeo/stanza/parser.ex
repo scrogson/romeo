@@ -5,30 +5,30 @@ defmodule Romeo.Stanza.Parser do
   use Romeo.XML
   import Romeo.XML
 
-  def parse(xmlel(name: "message", attrs: attrs, children: children) = stanza) do
+  def parse(xmlel(name: "message", attrs: attrs) = stanza) do
     struct(Message, parse_attrs(attrs))
     |> struct([body: get_body(stanza)])
     |> struct([html: get_html(stanza)])
-    |> struct([payload: parse_payload(children)])
+    |> struct([xml: stanza])
     |> struct([delayed?: delayed?(stanza)])
   end
 
-  def parse(xmlel(name: "presence", attrs: attrs, children: children) = stanza) do
+  def parse(xmlel(name: "presence", attrs: attrs) = stanza) do
     struct(Presence, parse_attrs(attrs))
     |> struct([show: get_show(stanza)])
     |> struct([status: get_status(stanza)])
-    |> struct([payload: parse_payload(children)])
+    |> struct([xml: stanza])
   end
 
-  def parse(xmlel(name: "iq", attrs: attrs, children: children)) do
+  def parse(xmlel(name: "iq", attrs: attrs) = stanza) do
     struct(IQ, parse_attrs(attrs))
-    |> struct([payload: parse_payload(children)])
+    |> struct([xml: stanza])
   end
 
-  def parse(xmlel(name: name, attrs: attrs, children: payload)) do
+  def parse(xmlel(name: name, attrs: attrs) = stanza) do
     [name: name]
     |> Dict.merge(parse_attrs(attrs))
-    |> Dict.merge([payload: parse_payload(payload)])
+    |> Dict.merge([xml: stanza])
     |> Enum.into(%{})
   end
 
@@ -51,14 +51,6 @@ defmodule Romeo.Stanza.Parser do
   defp parse_attr({key, value}) do
     {String.to_atom(key), value}
   end
-
-  defp parse_payload([]), do: []
-  defp parse_payload(payload) when is_list(payload) do
-    Enum.reduce payload, [], &parse_payload(&1, &2)
-  end
-  defp parse_payload([], acc), do: acc
-  defp parse_payload(payload, acc), do: [parse(payload)|acc]
-
 
   defp get_body(stanza), do: subelement(stanza, "body") |> cdata
   defp get_html(stanza), do: subelement(stanza, "html")

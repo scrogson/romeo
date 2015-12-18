@@ -8,14 +8,14 @@ defmodule Romeo.Stanza.IQ do
     to: jid,
     from: jid,
     type: binary,
-    payload: list
+    xml: tuple
   }
 
   defstruct [
-    id:       nil,
-    to:       nil,
-    from:     nil,
-    type:     nil,
-    payload: []
+    id:   nil,
+    to:   nil,
+    from: nil,
+    type: nil,
+    xml:  nil
   ]
 end

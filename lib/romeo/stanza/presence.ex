@@ -10,7 +10,7 @@ defmodule Romeo.Stanza.Presence do
     type: binary,
     show: binary | nil,
     status: binary | nil,
-    payload: list
+    xml: tuple
   }
 
   defstruct [
@@ -20,6 +20,6 @@ defmodule Romeo.Stanza.Presence do
     type: nil,
     show: nil,
     status: nil,
-    payload: []
+    xml: nil
   ]
 end

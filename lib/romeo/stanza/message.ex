@@ -10,7 +10,7 @@ defmodule Romeo.Stanza.Message do
     type: binary,
     body: binary | list,
     html: binary | list | nil,
-    payload: list,
+    xml: tuple,
     delayed?: boolean
   }
 
@@ -21,7 +21,7 @@ defmodule Romeo.Stanza.Message do
     type: "normal",
     body: "",
     html: nil,
-    payload: [],
+    xml: nil,
     delayed?: false
   ]
 end
