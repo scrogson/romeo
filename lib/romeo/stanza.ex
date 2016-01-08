@@ -190,27 +190,51 @@ defmodule Romeo.Stanza do
   @doc """
   Generates a presence stanza to join a MUC room.
 
+  ## Options
+
+  * `password` - the password for a MUC room - if required.
+  * `history` - used for specifying the amount of old messages to receive once
+    joined. The value of the `:history` option should be a keyword list of one
+    of the following:
+      * `maxchars` - limit the total number of characters in the history.
+      * `maxstanzas` - limit the total number of messages in the history.
+      * `seconds` - send only the messages received in the last `n` seconds.
+      * `since` - send only the messages received since the UTC datetime specified.
+    See http://xmpp.org/extensions/xep-0045.html#enter-managehistory
+    for details.
+
   ## Examples
       iex> Romeo.Stanza.join("lobby@muc.localhost", "hedwigbot")
       {:xmlel, "presence", [{"to", "lobby@muc.localhost/hedwigbot"}],
        [{:xmlel, "x", [{"xmlns", "http://jabber.org/protocol/muc"}],
        [{:xmlel, "history", [{"maxstanzas", "0"}], []}]}]}
   """
-  def join(room, username), do: join(:no_history, room, username)
+  def join(room, nickname, opts \\ []) do
+    history  = Keyword.get(opts, :history)
+    password = Keyword.get(opts, :password)
 
-  def join(:no_history, room, username) do
+    password = if password, do: [muc_password(password)], else: []
+    history = if history, do: [history(history)], else: [history(maxstanzas: 0)]
+
+    children = history ++ password
+
     xmlel(name: "presence",
       attrs: [
-        {"to", "#{room}/#{username}"}
+        {"to", "#{room}/#{nickname}"}
       ],
       children: [
         xmlel(name: "x",
           attrs: [{"xmlns", ns_muc}],
-          children: [
-            xmlel(name: "history",
-              attrs: [{"maxstanzas", "0"}])
-          ])
+          children: children)
       ])
+  end
+
+  defp history([{key, value}]) do
+    xmlel(name: "history", attrs: [{to_string(key), to_string(value)}])
+  end
+
+  defp muc_password(password) do
+    xmlel(name: "password", children: [xmlcdata(content: password)])
   end
 
   def chat(to, body), do: message(to, "chat", body)
