@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+- Enhancements
+  - [Romeo.Stanza.join/3] adds options for specifying MUC room password and
+    history options.
+
 ## v0.3.0
 
 - Backwards incompatible changes
