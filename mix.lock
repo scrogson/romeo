@@ -10,7 +10,7 @@
   "ex_doc": {:hex, :ex_doc, "0.10.0"},
   "excoveralls": {:hex, :excoveralls, "0.4.2"},
   "exjsx": {:hex, :exjsx, "3.2.0"},
-  "exml": {:git, "https://github.com/esl/exml.git", "d7b745fa89389b53706a07f33775f1f814c66cb4", []},
+  "exml": {:git, "https://github.com/paulgray/exml.git", "d04d0dfc956bd2bf5d9629a7524c6840eb02df28", []},
   "exrm": {:hex, :exrm, "0.19.9"},
   "getopt": {:hex, :getopt, "0.8.2"},
   "hackney": {:hex, :hackney, "1.4.4"},

@@ -28,7 +28,7 @@ defmodule Romeo.Mixfile do
 
   defp deps do
     [{:connection, "~> 1.0"},
-     {:exml, github: "esl/exml"},
+     {:exml, github: "paulgray/exml"},
 
      # Docs deps
      {:earmark, "~> 0.1", only: :dev},
