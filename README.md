@@ -12,7 +12,7 @@
 ```elixir
 def deps do
   [{:romeo, "~> 0.4.0"},
-   {:exml, github: "esl/exml"}]
+   {:exml, github: "paulgray/exml"}]
 end
 ```
 
