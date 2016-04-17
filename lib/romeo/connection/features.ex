@@ -27,26 +27,26 @@ defmodule Romeo.Connection.Features do
   end
 
   def supported_auth_mechanisms(features) do
-    case :exml_query.subelement(features, "mechanisms") do
+    case Romeo.XML.subelement(features, "mechanisms") do
       xml when Record.is_record(xml, :xmlel) ->
         mechanisms = xmlel(xml, :children)
-        for mechanism <- mechanisms, into: [], do: :exml_query.cdata(mechanism)
-      :undefined -> []
+        for mechanism <- mechanisms, into: [], do: Romeo.XML.cdata(mechanism)
+      nil -> []
     end
   end
 
   def supports?(features, "compression") do
-    case :exml_query.subelement(features, "compression") do
+    case Romeo.XML.subelement(features, "compression") do
       xml when Record.is_record(xml, :xmlel) ->
         methods = xmlel(xml, :children)
-        for method <- methods, into: [], do: :exml_query.cdata(method)
+        for method <- methods, into: [], do: Romeo.XML.cdata(method)
       _ -> false
     end
   end
   def supports?(features, feature) do
-    case :exml_query.subelement(features, feature) do
-      :undefined -> false
-      _          -> true
+    case Romeo.XML.subelement(features, feature) do
+      nil -> false
+      _   -> true
     end
   end
 end

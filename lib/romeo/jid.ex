@@ -16,15 +16,10 @@ defmodule Romeo.JID do
   A JID that includes a resource is called a "full JID", and it is used to
   identify a particular client connection (i.e., a specific connection for the
   associated "bare JID" account).
-  """
 
-  alias Romeo.JID
+  This module implements the `to_string/1` for the `String.Chars` protocol for
+  returning a binary string from the `JID` struct.
 
-  @type t :: %__MODULE__{}
-  defstruct user: "", server: "", resource: "", full: ""
-
-
-  @doc """
   Returns a string representation from a JID struct.
 
   ## Examples
@@ -37,6 +32,12 @@ defmodule Romeo.JID do
       iex> to_string(%Romeo.JID{server: "montague.lit"})
       "montague.lit"
   """
+
+  alias Romeo.JID
+
+  @type t :: %__MODULE__{}
+  defstruct user: "", server: "", resource: "", full: ""
+
   defimpl String.Chars, for: JID do
     def to_string(%JID{user: "", server: server, resource: ""}), do: server
     def to_string(%JID{user: user, server: server, resource: ""}) do

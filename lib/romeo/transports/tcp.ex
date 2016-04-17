@@ -26,7 +26,7 @@ defmodule Romeo.Transports.TCP do
     case :gen_tcp.connect(host, port, socket_opts ++ @socket_opts, conn.timeout) do
       {:ok, socket} ->
         Logger.info fn -> "Established connection to #{host}" end
-        {:ok, parser} = :exml_stream.new_parser
+        parser = :fxml_stream.new(self(), :infinity, [:no_gen_server])
         start_protocol(%{conn | parser: parser, socket: {:gen_tcp, socket}})
       {:error, _} = error ->
         error
@@ -50,48 +50,40 @@ defmodule Romeo.Transports.TCP do
     conn
     |> start_stream
     |> negotiate_features
-    |> start_tls
+    |> maybe_start_tls
     |> authenticate
     |> bind
     |> session
     |> ready
   end
 
-  defp start_stream(%Conn{jid: jid, socket: {mod, socket}} = conn) do
-    stanza = jid |> host |> Romeo.Stanza.start_stream
-
+  defp start_stream(%Conn{jid: jid} = conn) do
     conn
-    |> send(stanza)
-    |> recv(fn
-      conn, [xmlstreamstart(), xmlel(name: "stream:features") = features | []] ->
-        Kernel.send(self, {tcp_tag(mod), socket, features})
-        conn
-      conn, [xmlstreamstart() | []] ->
-        conn
-    end)
+    |> send(jid |> host |> Romeo.Stanza.start_stream)
+    |> recv(fn conn, xmlstreamstart() -> conn end)
   end
 
   defp negotiate_features(%Conn{} = conn) do
-    recv(conn, fn conn, [xmlel(name: "stream:features") = packet | []] ->
+    recv(conn, fn conn, xmlel(name: "stream:features") = packet ->
       %{conn | features: Features.parse_stream_features(packet)}
     end)
   end
 
-  defp start_tls(%Conn{features: %Features{tls?: true}} = conn) do
+  defp maybe_start_tls(%Conn{features: %Features{tls?: true}} = conn) do
     conn
     |> send(Stanza.start_tls)
-    |> recv(fn conn, [xmlel(name: "proceed") | []] -> conn end)
+    |> recv(fn conn, xmlel(name: "proceed") -> conn end)
     |> upgrade_to_tls
     |> start_stream
     |> negotiate_features
   end
-  defp start_tls(%Conn{} = conn), do: conn
+  defp maybe_start_tls(%Conn{} = conn), do: conn
 
-  defp upgrade_to_tls(%Conn{socket: {:gen_tcp, socket}} = conn) do
+  defp upgrade_to_tls(%Conn{parser: parser, socket: {:gen_tcp, socket}} = conn) do
     Logger.info fn -> "Negotiating secure connection" end
 
     {:ok, socket} = :ssl.connect(socket, conn.ssl_opts ++ @ssl_opts)
-    {:ok, parser} = :exml_stream.new_parser
+    parser = :fxml_stream.reset(parser)
 
     Logger.info fn -> "Connection successfully secured" end
     %{conn | socket: {:ssl, socket}, parser: parser}
@@ -111,7 +103,7 @@ defmodule Romeo.Transports.TCP do
 
     conn
     |> send(stanza)
-    |> recv(fn conn, [xmlel(name: "iq") = stanza | []] ->
+    |> recv(fn conn, xmlel(name: "iq") = stanza ->
       "result" = Romeo.XML.attr(stanza, "type")
       ^id = Romeo.XML.attr(stanza, "id")
 
@@ -134,7 +126,7 @@ defmodule Romeo.Transports.TCP do
 
     conn
     |> send(stanza)
-    |> recv(fn conn, [xmlel(name: "iq") = stanza | []] ->
+    |> recv(fn conn, xmlel(name: "iq") = stanza ->
       "result" = Romeo.XML.attr(stanza, "type")
       ^id = Romeo.XML.attr(stanza, "id")
 
@@ -149,29 +141,31 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp reset_parser(%Conn{parser: parser} = conn) do
-    {:ok, parser} = :exml_stream.reset_parser(parser)
+    parser = :fxml_stream.reset(parser)
     %{conn | parser: parser}
   end
 
   defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data, send_to_owner \\ false) do
-    {conn, stanzas} =
-      cond do
-        is_binary(data) ->
-          {:ok, parser, stanzas} = :exml_stream.parse(parser, data)
-          {%{conn | parser: parser}, stanzas}
-        xmlel() = data ->
-          {conn, [data]}
-        true -> {conn, []}
+    parser = :fxml_stream.parse(parser, data)
+
+    stanza =
+      receive do
+        {:xmlstreamstart, _, _} = stanza -> stanza
+        {:xmlstreamend, _} = stanza      -> stanza
+        {:xmlstreamraw, stanza}          -> stanza
+        {:xmlstreamcdata, stanza}        -> stanza
+        {:xmlstreamerror, _} = stanza    -> stanza
+        {:xmlstreamelement, stanza}      -> stanza
       end
 
-    for stanza <- stanzas do
-      Logger.debug fn -> "[#{jid}][INCOMING] #{inspect Romeo.XML.encode!(stanza)}" end
-      if send_to_owner do
-        Kernel.send(owner, {:stanza, stanza})
-      end
+    Logger.debug fn -> "[#{jid}][INCOMING] #{inspect stanza}" end
+    #Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
+
+    if send_to_owner do
+      Kernel.send(owner, {:stanza, stanza})
     end
 
-    {:ok, conn, stanzas}
+    {:ok, %{conn | parser: parser}, stanza}
   end
 
   def send(%Conn{jid: jid, socket: {mod, socket}} = conn, stanza) do
@@ -185,9 +179,9 @@ defmodule Romeo.Transports.TCP do
   def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, fun) do
     receive do
       {:tcp, ^socket, data} ->
-        :inet.setopts(socket, active: :once)
-        {:ok, conn, stanzas} = parse_data(conn, data)
-        fun.(conn, stanzas)
+        :ok = activate({:gen_tcp, socket})
+        {:ok, conn, stanza} = parse_data(conn, data)
+        fun.(conn, stanza)
       {:tcp_closed, ^socket} ->
         {:error, :closed}
       {:tcp_error, ^socket, reason} ->
@@ -200,9 +194,9 @@ defmodule Romeo.Transports.TCP do
   def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, fun) do
     receive do
       {:ssl, ^socket, data} ->
-        :ssl.setopts(socket, active: :once)
-        {:ok, conn, stanzas} = parse_data(conn, data)
-        fun.(conn, stanzas)
+        :ok = activate({:ssl, socket})
+        {:ok, conn, stanza} = parse_data(conn, data)
+        fun.(conn, stanza)
       {:ssl_closed, ^socket} ->
         {:error, :closed}
       {:ssl_error, ^socket, reason} ->
@@ -235,7 +229,7 @@ defmodule Romeo.Transports.TCP do
 
   defp handle_data(data, %{socket: socket} = conn) do
     :ok = activate(socket)
-    {:ok, _conn, _stanzas} = parse_data(conn, data, false)
+    {:ok, _conn, _stanza} = parse_data(conn, data, false)
   end
 
   defp activate({:gen_tcp, socket}) do
@@ -266,7 +260,4 @@ defmodule Romeo.Transports.TCP do
   defp host(jid) do
     Romeo.JID.parse(jid).server
   end
-
-  defp tcp_tag(:gen_tcp), do: :tcp
-  defp tcp_tag(:ssl), do: :ssl
 end

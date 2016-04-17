@@ -1,7 +1,7 @@
 defmodule Romeo.Mixfile do
   use Mix.Project
 
-  @version "0.4.0"
+  @version "0.5.0"
 
   def project do
     [app: :romeo,
@@ -18,7 +18,7 @@ defmodule Romeo.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :connection, :exml],
+    [applications: [:logger, :connection, :fast_xml],
      mod: {Romeo, []}]
   end
 
@@ -28,15 +28,15 @@ defmodule Romeo.Mixfile do
 
   defp deps do
     [{:connection, "~> 1.0"},
-     {:exml, github: "paulgray/exml"},
+     {:fast_xml, "~> 1.1"},
 
      # Docs deps
-     {:earmark, "~> 0.1", only: :dev},
-     {:ex_doc, "~> 0.10", only: :dev},
+     {:earmark, "~> 0.2", only: :docs},
+     {:ex_doc, "~> 0.11", only: :docs},
 
      # Test deps
-     {:ejabberd, github: "processone/ejabberd", tag: "15.10", only: :test},
-     {:excoveralls, "~> 0.4.2", only: :test}]
+     {:ejabberd, "~> 16.3", only: :test},
+     {:excoveralls, "~> 0.5", only: :test}]
   end
 
   defp docs do

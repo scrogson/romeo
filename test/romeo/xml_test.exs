@@ -29,6 +29,9 @@ defmodule Romeo.XMLTest do
     ])
     assert subelement(xml, "body") ==
       {:xmlel, "body", [], [xmlcdata(content: "testing")]}
+
+    assert subelement(xml, "non-existent") == nil
+    assert subelement(xml, "non-existent", []) == []
   end
 
   test "cdata" do

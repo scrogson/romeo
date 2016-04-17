@@ -6,8 +6,11 @@ defmodule Romeo.Stanza do
   use Romeo.XML
 
   @doc """
-  Converts an `exml` record to an XML binary string.
+  Converts an `xml` record to an XML binary string.
   """
+  def to_xml(record) when Record.is_record(record) do
+    Romeo.XML.encode!(record)
+  end
   def to_xml(record) when Record.is_record(record) do
     Romeo.XML.encode!(record)
   end
@@ -92,7 +95,7 @@ defmodule Romeo.Stanza do
         {"xmlns", ns_compress}
       ],
       children: [
-        xmlel(name: "method", children: [:exml.escape_cdata(method)])
+        xmlel(name: "method", children: [cdata(method)])
       ])
   end
 
@@ -103,7 +106,7 @@ defmodule Romeo.Stanza do
         {"xmlns", ns_sasl},
         {"mechanism", mechanism}
       ],
-      children: body)
+      children: [body])
   end
 
   def bind(resource) do
@@ -111,7 +114,7 @@ defmodule Romeo.Stanza do
       attrs: [{"xmlns", ns_bind}],
       children: [
         xmlel(name: "resource",
-          children: xmlcdata(content: resource))
+          children: [cdata(resource)])
       ])
     iq("set", body)
   end
@@ -136,7 +139,7 @@ defmodule Romeo.Stanza do
   end
 
   def iq(type, body) do
-    xmlel(name: "iq", attrs: [{"type", type}, {"id", id}], children: body)
+    xmlel(name: "iq", attrs: [{"type", type}, {"id", id}], children: [body])
   end
 
   def iq(to, type, body) do
@@ -157,8 +160,8 @@ defmodule Romeo.Stanza do
       name: "query",
       attrs: [{"xmlns", ns_inband_register}],
       children: [
-        xmlel(name: "username", children: :exml.escape_cdata(username)),
-        xmlel(name: "password", children: :exml.escape_cdata(password))
+        xmlel(name: "username", children: [cdata(username)]),
+        xmlel(name: "password", children: [cdata(password)])
       ]
     ))
   end
@@ -274,8 +277,9 @@ defmodule Romeo.Stanza do
   end
 
   def xhtml_im(data) when is_binary(data) do
-    {:ok, data} = :exml.parse(data)
-    xhtml_im(data)
+    data
+    |> :fxml_stream.parse_element
+    |> xhtml_im
   end
   def xhtml_im(data) do
     xmlel(name: "html",
@@ -294,11 +298,11 @@ defmodule Romeo.Stanza do
   end
 
   def cdata(payload) do
-    [xmlcdata(content: payload)]
+    xmlcdata(content: payload)
   end
 
   def base64_cdata(payload) do
-    [xmlcdata(content: Base.encode64(payload))]
+    xmlcdata(content: Base.encode64(payload))
   end
 
   @doc """
