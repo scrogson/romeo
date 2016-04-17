@@ -16,7 +16,7 @@ defmodule Romeo.Stanza.ParserTest do
     assert parsed.id == "b0e3"
     assert %Romeo.JID{user: "scrogson", server: "im.test.dev", resource: "issues"} = parsed.to
     assert %Romeo.JID{user: "", server: "im.test.dev", resource: ""} = parsed.from
-    assert xmlel(name: "iq") = parsed.xml
+    xmlel(name: "iq") = parsed.xml
 
     query = Romeo.XML.subelement(parsed.xml, "query")
     assert Enum.count(xmlel(query, :children)) == 2

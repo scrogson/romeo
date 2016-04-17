@@ -11,8 +11,7 @@
 
 ```elixir
 def deps do
-  [{:romeo, "~> 0.4.0"},
-   {:exml, github: "paulgray/exml"}]
+  [{:romeo, "~> 0.5.0"}]
 end
 ```
 
@@ -90,4 +89,3 @@ SOFTWARE.
 ![Romeo and Juliet](https://upload.wikimedia.org/wikipedia/commons/c/cc/Picou%2C_Henri_Pierre_-_Romeo_and_Juliet.jpg
 "Henri-Pierre Picou [Public domain], via Wikimedia Commons")
 **Image credit:** Henri-Pierre Picou [Public domain], via Wikimedia Commons
-

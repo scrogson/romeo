@@ -1,8 +1,8 @@
 defmodule Romeo.ConnectionTest do
   use ExUnit.Case
+
   use UserHelper
   use Romeo.XML
-  import Romeo.XML
 
   setup do
     romeo  = build_user("romeo", tls: true)
@@ -16,14 +16,14 @@ defmodule Romeo.ConnectionTest do
   test "connection no TLS" do
     romeo = build_user("romeo")
 
-    {:ok, pid} = Romeo.Connection.start_link(romeo)
+    {:ok, _pid} = Romeo.Connection.start_link(romeo)
 
     assert_receive {:resource_bound, _}
     assert_receive :connection_ready
   end
 
   test "connection TLS", %{romeo: romeo} do
-    {:ok, pid} = Romeo.Connection.start_link(romeo)
+    {:ok, _pid} = Romeo.Connection.start_link(romeo)
 
     assert_receive {:resource_bound, _}
     assert_receive :connection_ready

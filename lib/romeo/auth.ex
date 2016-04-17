@@ -58,7 +58,7 @@ defmodule Romeo.Auth do
   end
 
   defp success?(%{transport: mod} = conn) do
-    mod.recv(conn, fn conn, [xmlel(name: name) | []] ->
+    mod.recv(conn, fn conn, xmlel(name: name) ->
       case name do
         "success" ->
           Logger.info fn -> "Authenticated successfully" end

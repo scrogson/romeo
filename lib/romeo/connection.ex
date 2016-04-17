@@ -115,11 +115,9 @@ defmodule Romeo.Connection do
 
   def handle_info(info, %{owner: owner, transport: transport} = conn) do
     case transport.handle_message(info, conn) do
-      {:ok, conn, stanzas} ->
-        for stanza <- stanzas do
-          stanza = Romeo.Stanza.Parser.parse(stanza)
-          Kernel.send(owner, {:stanza, stanza})
-        end
+      {:ok, conn, stanza} ->
+        stanza = Romeo.Stanza.Parser.parse(stanza)
+        Kernel.send(owner, {:stanza, stanza})
         {:noreply, conn}
       {:error, _} = error ->
         {:disconnect, error, conn}

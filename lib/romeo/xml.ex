@@ -1,6 +1,6 @@
 defmodule Romeo.XML do
   @moduledoc """
-  Provides functions for building XML stanzas with the `exml` library.
+  Provides functions for building XML stanzas with the `fast_xml` library.
   """
 
   require Record
@@ -21,28 +21,37 @@ defmodule Romeo.XML do
     end
   end
 
-  def encode!(record) when Record.is_record(record) do
-    :exml.to_binary(record)
-  end
-  def encode!(stanza) do
+  def encode!({:xmlel, _, _, _} = xml), do:
+    :fxml.element_to_binary(xml)
+  def encode!({:xmlstreamstart, name, attrs}), do:
+    encode!({:xmlel, name, attrs, []}) |> String.replace("/>", ">")
+  def encode!({:xmlstreamend, name}), do:
+    "</#{name}>"
+
+  def encode!(stanza), do:
     Romeo.Stanza.to_xml(stanza)
-  end
 
   @doc """
   Returns the given attribute value or default.
   """
   def attr(element, name, default \\ nil) do
-    :exml_query.attr(element, name, default)
+    case :fxml.get_tag_attr_s(name, element) do
+      ""  -> default
+      val -> val
+    end
   end
 
   def subelement(element, name, default \\ nil) do
-    :exml_query.subelement(element, name, default)
+    case :fxml.get_subtag(element, name) do
+      false -> default
+      val   -> val
+    end
   end
 
   def subelements(element, name) do
-    :exml_query.subelements(element, name)
+    :fxml.get_subtags(element, name)
   end
 
   def cdata(nil), do: ""
-  def cdata(element), do: :exml_query.cdata(element)
+  def cdata(element), do: :fxml.get_tag_cdata(element)
 end
