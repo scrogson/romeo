@@ -5,6 +5,7 @@ otp_release:
   - 18.0
 sudo: false
 before_script:
- - mix ejabberd.gen.config
+ - MIX_ENV=test mix deps.compile
+ - MIX_ENV=test mix ejabberd.gen.config
 after_script:
   - MIX_ENV=test mix coveralls.travis
