@@ -158,8 +158,7 @@ defmodule Romeo.Transports.TCP do
         {:xmlstreamelement, stanza}      -> stanza
       end
 
-    Logger.debug fn -> "[#{jid}][INCOMING] #{inspect stanza}" end
-    #Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
+    Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
 
     if send_to_owner do
       Kernel.send(owner, {:stanza, stanza})
@@ -178,6 +177,8 @@ defmodule Romeo.Transports.TCP do
   def recv({:ok, conn}, fun), do: recv(conn, fun)
   def recv(%Conn{socket: {:gen_tcp, socket}, timeout: timeout} = conn, fun) do
     receive do
+      {:xmlstreamelement, stanza} ->
+        fun.(conn, stanza)
       {:tcp, ^socket, data} ->
         :ok = activate({:gen_tcp, socket})
         {:ok, conn, stanza} = parse_data(conn, data)
@@ -193,6 +194,8 @@ defmodule Romeo.Transports.TCP do
   end
   def recv(%Conn{socket: {:ssl, socket}, timeout: timeout} = conn, fun) do
     receive do
+      {:xmlstreamelement, stanza} ->
+        fun.(conn, stanza)
       {:ssl, ^socket, data} ->
         :ok = activate({:ssl, socket})
         {:ok, conn, stanza} = parse_data(conn, data)
