@@ -1,7 +1,7 @@
 defmodule Romeo.Mixfile do
   use Mix.Project
 
-  @version "0.5.0"
+  @version "0.6.0"
 
   def project do
     [app: :romeo,
@@ -10,10 +10,10 @@ defmodule Romeo.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     description: description,
-     deps: deps,
-     docs: docs,
-     package: package,
+     description: description(),
+     deps: deps(),
+     docs: docs(),
+     package: package(),
      test_coverage: [tool: ExCoveralls]]
   end
 
@@ -35,12 +35,12 @@ defmodule Romeo.Mixfile do
      {:ex_doc, "~> 0.11", only: :docs},
 
      # Test deps
-     {:ejabberd, "~> 16.3", only: :test},
+     {:ejabberd, "~> 16.6.2", only: :test},
      {:excoveralls, "~> 0.5", only: :test}]
   end
 
   defp docs do
-    [extras: docs_extras,
+    [extras: docs_extras(),
      main: "extra-readme"]
   end
 
