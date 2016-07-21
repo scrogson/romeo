@@ -11,7 +11,7 @@
 
 ```elixir
 def deps do
-  [{:romeo, "~> 0.5.0"}]
+  [{:romeo, "~> 0.6.0"}]
 end
 ```
 
