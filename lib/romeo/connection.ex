@@ -21,9 +21,11 @@ defmodule Romeo.Connection do
             ssl_opts: [],
             socket: nil,
             socket_opts: [],
+            stream_ns: Romeo.XMLNS.ns_jabber_client,
+            stream_id: nil,
             timeout: nil,
             transport: nil
-
+            
   use Connection
 
   require Logger
@@ -44,6 +46,7 @@ defmodule Romeo.Connection do
     * `:socket_opts` - Options to be given to the underlying socket;
     * `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`);
     * `:transport` - Transport handles the protocol (default: `#{@default_transport}`);
+    * `:stream_ns` - Stream type (default: `#{Romeo.XMLNS.ns_jabber_client}`);
   """
   def start_link(opts) do
     opts =

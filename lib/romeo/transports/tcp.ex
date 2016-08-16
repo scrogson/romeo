@@ -46,23 +46,50 @@ defmodule Romeo.Transports.TCP do
     end
   end
 
-  defp start_protocol(%Conn{} = conn) do
-    conn
-    |> start_stream
-    |> negotiate_features
-    |> maybe_start_tls
-    |> authenticate
-    |> bind
-    |> session
-    |> ready
+  defp start_protocol(%Conn{stream_ns: stream_ns} = conn) do
+    cond do
+      stream_ns == ns_component_accept ->
+        conn
+        |> start_stream(ns_component_accept)
+        |> handshake!
+        |> ready
+      stream_ns == ns_jabber_client ->
+        conn
+        |> start_stream
+        |> negotiate_features
+        |> maybe_start_tls
+        |> authenticate
+        |> bind
+        |> session
+        |> ready
+      true ->
+        raise Romeo.Error, "Unsupported stream namespace '#{stream_ns}'."
+    end
   end
-
-  defp start_stream(%Conn{jid: jid} = conn) do
+  
+  defp start_stream(%Conn{jid: jid} = conn, xmlns \\ ns_jabber_client) do
     conn
-    |> send(jid |> host |> Romeo.Stanza.start_stream)
+    |> send(jid |> host |> Romeo.Stanza.start_stream(xmlns))
     |> recv(fn conn, xmlstreamstart() -> conn end)
   end
+  
+  defp handshake!(%Conn{stream_id: stream_id} = conn) do
+    hash = :crypto.hash(:sha, "#{stream_id}#{conn.password}")
+    |> Base.encode16
+    |> String.downcase
 
+    handshake = Stanza.handshake(hash)
+    
+    conn
+    |> send(handshake)
+    |> recv(fn
+      conn, [xmlel(name: "handshake")] ->
+        conn
+      _conn, [xmlel(name: "stream:error"), xmlstreamend()] ->
+        raise Romeo.Auth.Error, "handshake"
+    end)
+  end
+  
   defp negotiate_features(%Conn{} = conn) do
     recv(conn, fn conn, xmlel(name: "stream:features") = packet ->
       %{conn | features: Features.parse_stream_features(packet)}

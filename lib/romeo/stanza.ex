@@ -99,6 +99,11 @@ defmodule Romeo.Stanza do
       ])
   end
 
+  def handshake(hash) do
+    cdata = xmlcdata(content: hash)
+    xmlel(name: "handshake", children: [cdata])
+  end
+  
   def auth(mechanism), do: auth(mechanism, [])
   def auth(mechanism, body) do
     xmlel(name: "auth",
