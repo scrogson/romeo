@@ -26,6 +26,23 @@ defmodule Romeo.Auth do
     preferred_mechanism(preferred, mechanisms) |> do_authenticate(conn)
   end
 
+  def handshake!(%{transport: mod, password: password, stream_id: stream_id} = conn) do
+    stanza =
+      :crypto.hash(:sha, "#{stream_id}#{password}")
+      |> Base.encode16(case: :lower)
+      |> Stanza.handshake()
+
+    conn
+    |> mod.send(stanza)
+    |> mod.recv(fn
+      conn, xmlel(name: "handshake") ->
+        conn
+      _conn, xmlel(name: "stream:error") ->
+        raise Romeo.Auth.Error, "handshake error"
+    end)
+  end
+
+
   defp do_authenticate(mechanism, conn) do
     Logger.info fn -> "Authenticating with #{mechanism}" end
     authenticate_with(mechanism, conn)
