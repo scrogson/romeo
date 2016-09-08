@@ -3,9 +3,18 @@ elixir:
   - 1.2.6
 otp_release:
   - 18.0
+env:
+  global:
+  - MIX_ENV=test
 sudo: false
-before_script:
+install:
+  - mix local.hex --force
   - mix local.rebar --force
+  - mix deps.get
+before_script:
+  - env TRAVIS=false mix compile
   - mix ejabberd.gen.config
+script:
+  - mix test
 after_script:
-  - MIX_ENV=test mix coveralls.travis
+  - mix coveralls.travis
