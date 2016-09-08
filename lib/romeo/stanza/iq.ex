@@ -8,6 +8,7 @@ defmodule Romeo.Stanza.IQ do
     to: jid,
     from: jid,
     type: binary,
+    items: list | nil,
     xml: tuple
   }
 
@@ -16,6 +17,7 @@ defmodule Romeo.Stanza.IQ do
     to:   nil,
     from: nil,
     type: nil,
+    items: nil,
     xml:  nil
   ]
 end
