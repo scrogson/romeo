@@ -156,6 +156,28 @@ defmodule Romeo.Stanza do
     iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_roster}]))
   end
 
+  def set_roster_item(jid, subscription \\ "both", name \\ "", group \\ "") do
+    name_to_set = case name do
+      "" -> Romeo.JID.parse(jid).user
+      _ -> name
+    end
+    group_xmlel = case group do
+      "" -> []
+      _ -> [xmlel(name: "group", children: [cdata(group)])]
+    end
+    iq("set", xmlel(
+      name: "query",
+      attrs: [{"xmlns", ns_roster}],
+      children: [
+        xmlel(name: "item", attrs: [
+          {"jid", jid},
+          {"subscription", subscription},
+          {"name", name_to_set}
+        ], children: group_xmlel)
+      ]
+    ))
+  end
+
   def get_inband_register do
     iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_inband_register}]))
   end

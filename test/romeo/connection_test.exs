@@ -87,4 +87,14 @@ defmodule Romeo.ConnectionTest do
     assert to_string(to) == "juliet@localhost/juliet"
     assert body == "Hey babe"
   end
+
+  test "close connection", %{romeo: romeo} do
+    {:ok, pid} = Romeo.Connection.start_link(romeo)
+
+    assert_receive {:resource_bound, _}
+    assert_receive :connection_ready
+
+    assert :ok = Romeo.Connection.close(pid)
+    refute_receive :connection_ready, 1000
+  end
 end

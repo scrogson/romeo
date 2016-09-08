@@ -28,9 +28,10 @@ end
 ```elixir
 alias Romeo.Stanza
 alias Romeo.Connection, as: Conn
+alias Romeo.Roster
 
 # Minimum configuration options
-opts = [jid: "romeo@montague.lit", password: "iL0v3JuL137", nickname: "romeo"]
+opts = [jid: "romeo@montague.lit", password: "iL0v3JuL137"]
 
 # Start the client
 {:ok, pid} = Conn.start_link(opts)
@@ -49,6 +50,15 @@ msg = "See how she leans her cheek upon her hand! " <>
       "O that I were a glove upon that hand, that " <>
       "I might touch that cheek!"
 :ok = Conn.send(pid, Stanza.groupchat("library@muc.montague.lit", msg))
+
+# Get roster items as tuple of %Romeo.Roster.Items{} struct
+items = Roster.items(pid)
+
+# Add jid to roster
+:ok = Roster.add(pid, "juliet@capulet.lit")
+
+# Remove jid from roster
+:ok = Roster.remove(pid, "juliet@capulet.lit")
 ```
 
 ## Documentation

@@ -110,6 +110,13 @@ defmodule Romeo.StanzaTest do
       ~r"<iq type='get' id='(.*)'><query xmlns='#{ns_roster}'/></iq>"
   end
 
+  test "set_roster_item" do
+    assert Stanza.set_roster_item("test@localhost", "none", "test2", "buddies") |> Stanza.to_xml =~
+      ~r"<iq type='set' id='(.*)'><query xmlns='#{ns_roster}'><item jid='test@localhost' subscription='none' name='test2'><group>buddies</group></item></query></iq>"
+    assert Stanza.set_roster_item("test@localhost") |> Stanza.to_xml =~
+      ~r"<iq type='set' id='(.*)'><query xmlns='#{ns_roster}'><item jid='test@localhost' subscription='both' name='test'/></query></iq>"
+  end
+
   test "get_vcard" do
     assert Stanza.get_vcard("test@localhost") |> Stanza.to_xml =~
     ~r"<iq to='test@localhost' type='get' id='(.*)'><vCard xmlns='vcard-temp'/></iq>"
