@@ -31,8 +31,7 @@ defmodule Romeo.Mixfile do
      {:fast_xml, "~> 1.1"},
 
      # Docs deps
-     {:earmark, "~> 0.2", only: :docs},
-     {:ex_doc, "~> 0.11", only: :docs},
+     {:ex_doc, "~> 0.13", only: :docs},
 
      # Test deps
      {:ejabberd, "~> 16.6.2", only: :test},
@@ -41,7 +40,7 @@ defmodule Romeo.Mixfile do
 
   defp docs do
     [extras: docs_extras(),
-     main: "extra-readme"]
+     main: "readme"]
   end
 
   defp docs_extras do
