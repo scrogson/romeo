@@ -35,7 +35,7 @@ defmodule Romeo.Mixfile do
      {:ex_doc, "~> 0.11", only: :docs},
 
      # Test deps
-     {:ejabberd, "~> 16.6.2", only: :test},
+     {:ejabberd, "~> 16.8", only: :test},
      {:excoveralls, "~> 0.5", only: :test}]
   end
 

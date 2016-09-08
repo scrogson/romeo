@@ -18,6 +18,12 @@ listen:
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
+  -
+    port: 52227
+    module: ejabberd_service
+    hosts:
+      "test.localhost":
+        password: "secret"
 
 auth_method: internal
 

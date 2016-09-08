@@ -2,7 +2,7 @@ use Mix.Config
 
 config :ex_unit, :assert_receive_timeout, 2000
 
-config :logger, level: :info
+config :logger, level: :debug
 
 config :mnesia, dir: 'mnesia'
 

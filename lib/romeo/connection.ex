@@ -6,7 +6,8 @@ defmodule Romeo.Connection do
 
   alias Romeo.Connection.Features
 
-  defstruct features: %Features{},
+  defstruct component: false,
+            features: %Features{},
             host: nil,
             jid: nil,
             nickname: "",
@@ -21,7 +22,6 @@ defmodule Romeo.Connection do
             ssl_opts: [],
             socket: nil,
             socket_opts: [],
-            stream_ns: Romeo.XMLNS.ns_jabber_client,
             stream_id: nil,
             timeout: nil,
             transport: nil
@@ -37,6 +37,7 @@ defmodule Romeo.Connection do
 
   ## Options
 
+    * `:component` - Connect as an [XMPP Component][0] (default: `false`);
     * `:host` - Server hostname (default: inferred by the JID);
     * `:jid` - User jabber ID;
     * `:password` - User password;
@@ -46,7 +47,8 @@ defmodule Romeo.Connection do
     * `:socket_opts` - Options to be given to the underlying socket;
     * `:timeout` - Connect timeout in milliseconds (default: `#{@timeout}`);
     * `:transport` - Transport handles the protocol (default: `#{@default_transport}`);
-    * `:stream_ns` - Stream type (default: `#{Romeo.XMLNS.ns_jabber_client}`);
+
+  [0]: http://xmpp.org/extensions/xep-0114.html
   """
   def start_link(opts) do
     opts =
