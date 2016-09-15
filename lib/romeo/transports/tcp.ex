@@ -162,6 +162,8 @@ defmodule Romeo.Transports.TCP do
   end
 
   defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data, send_to_owner \\ false) do
+    Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
+
     parser = :fxml_stream.parse(parser, data)
 
     stanza =
@@ -174,7 +176,6 @@ defmodule Romeo.Transports.TCP do
         {:xmlstreamelement, stanza}      -> stanza
       end
 
-    Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
 
     if send_to_owner do
       Kernel.send(owner, {:stanza, stanza})
