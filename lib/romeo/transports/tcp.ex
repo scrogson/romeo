@@ -230,7 +230,7 @@ defmodule Romeo.Transports.TCP do
   def handle_message({:tcp, socket, data}, %{socket: {:gen_tcp, socket}} = conn) do
     {:ok, _, _} = handle_data(data, conn)
   end
-  def handle_message({:xmlstreamelement, stanza}, %{owner: owner} = conn) do
+  def handle_message({:xmlstreamelement, stanza}, conn) do
     {:ok, conn, stanza}
   end
   def handle_message({:tcp_closed, socket}, %{socket: {:gen_tcp, socket}}) do
