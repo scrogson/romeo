@@ -51,19 +51,19 @@ defmodule Romeo.Transports.TCP do
   defp start_protocol(%Conn{component: true} = conn) do
     conn
     |> start_stream(@ns_component_accept)
-    |> handshake
-    |> ready
+    |> handshake()
+    |> ready()
   end
 
   defp start_protocol(%Conn{} = conn) do
     conn
     |> start_stream(@ns_jabber_client)
-    |> negotiate_features
-    |> maybe_start_tls
-    |> authenticate
-    |> bind
-    |> session
-    |> ready
+    |> negotiate_features()
+    |> maybe_start_tls()
+    |> authenticate()
+    |> bind()
+    |> session()
+    |> ready()
   end
 
   defp start_stream(%Conn{jid: jid} = conn, xmlns \\ @ns_jabber_client) do
