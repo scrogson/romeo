@@ -25,7 +25,7 @@ defmodule Romeo.Connection do
             stream_id: nil,
             timeout: nil,
             transport: nil
-            
+
   use Connection
 
   require Logger
