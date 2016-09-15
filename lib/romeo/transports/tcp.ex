@@ -167,21 +167,25 @@ defmodule Romeo.Transports.TCP do
     parser = :fxml_stream.parse(parser, data)
 
     stanza =
-      receive do
-        {:xmlstreamstart, _, _} = stanza -> stanza
-        {:xmlstreamend, _} = stanza      -> stanza
-        {:xmlstreamraw, stanza}          -> stanza
-        {:xmlstreamcdata, stanza}        -> stanza
-        {:xmlstreamerror, _} = stanza    -> stanza
-        {:xmlstreamelement, stanza}      -> stanza
+      case receive_stanza do
+        :more -> :more
+        stanza -> stanza
       end
 
-
-    if send_to_owner do
-      Kernel.send(owner, {:stanza, stanza})
-    end
-
     {:ok, %{conn | parser: parser}, stanza}
+  end
+
+  defp receive_stanza(timeout \\ 10) do
+    receive do
+      {:xmlstreamstart, _, _} = stanza -> stanza
+      {:xmlstreamend, _} = stanza      -> stanza
+      {:xmlstreamraw, stanza}          -> stanza
+      {:xmlstreamcdata, stanza}        -> stanza
+      {:xmlstreamerror, _} = stanza    -> stanza
+      {:xmlstreamelement, stanza}      -> stanza
+    after timeout ->
+      :more
+    end
   end
 
   def send(%Conn{jid: jid, socket: {mod, socket}} = conn, stanza) do
