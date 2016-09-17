@@ -161,7 +161,7 @@ defmodule Romeo.Transports.TCP do
     %{conn | parser: parser}
   end
 
-  defp parse_data(%Conn{jid: jid, owner: owner, parser: parser} = conn, data, send_to_owner \\ false) do
+  defp parse_data(%Conn{jid: jid, parser: parser} = conn, data) do
     Logger.debug fn -> "[#{jid}][INCOMING] #{inspect data}" end
 
     parser = :fxml_stream.parse(parser, data)
@@ -202,8 +202,12 @@ defmodule Romeo.Transports.TCP do
         fun.(conn, stanza)
       {:tcp, ^socket, data} ->
         :ok = activate({:gen_tcp, socket})
-        {:ok, conn, stanza} = parse_data(conn, data)
-        fun.(conn, stanza)
+        if whitespace_only?(data) do
+          conn
+        else
+          {:ok, conn, stanza} = parse_data(conn, data)
+          fun.(conn, stanza)
+        end
       {:tcp_closed, ^socket} ->
         {:error, :closed}
       {:tcp_error, ^socket, reason} ->
@@ -217,10 +221,18 @@ defmodule Romeo.Transports.TCP do
     receive do
       {:xmlstreamelement, stanza} ->
         fun.(conn, stanza)
+      {:ssl, ^socket, " "} ->
+        :ok = activate({:ssl, socket})
+        conn
       {:ssl, ^socket, data} ->
         :ok = activate({:ssl, socket})
-        {:ok, conn, stanza} = parse_data(conn, data)
-        fun.(conn, stanza)
+
+        if whitespace_only?(data) do
+          conn
+        else
+          {:ok, conn, stanza} = parse_data(conn, data)
+          fun.(conn, stanza)
+        end
       {:ssl_closed, ^socket} ->
         {:error, :closed}
       {:ssl_error, ^socket, reason} ->
@@ -256,8 +268,10 @@ defmodule Romeo.Transports.TCP do
 
   defp handle_data(data, %{socket: socket} = conn) do
     :ok = activate(socket)
-    {:ok, _conn, _stanza} = parse_data(conn, data, false)
+    {:ok, _conn, _stanza} = parse_data(conn, data)
   end
+
+  defp whitespace_only?(data), do: Regex.match?(~r/^\s+$/, data)
 
   defp activate({:gen_tcp, socket}) do
     case :inet.setopts(socket, [active: :once]) do
