@@ -50,14 +50,14 @@ defmodule Romeo.Connection do
 
   [0]: http://xmpp.org/extensions/xep-0114.html
   """
-  def start_link(opts) do
-    opts =
-      opts
+  def start_link(args, options \\ []) do
+    args =
+      args
       |> Keyword.put_new(:timeout, @timeout)
       |> Keyword.put_new(:transport, @default_transport)
       |> Keyword.put(:owner, self)
 
-    Connection.start_link(__MODULE__, struct(__MODULE__, opts))
+    Connection.start_link(__MODULE__, struct(__MODULE__, args), options)
   end
 
   @doc """
