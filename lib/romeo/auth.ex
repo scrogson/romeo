@@ -6,6 +6,11 @@ defmodule Romeo.Auth do
   use Romeo.XML
   require Logger
 
+  defmodule Mechanism do
+    @doc "Authenticates using the supplied mechanism"
+    @callback authenticate(String.t, Romeo.Connection.t) :: Romeo.Connection.t
+  end
+
   defmodule Error do
     defexception [:message]
 
@@ -44,8 +49,16 @@ defmodule Romeo.Auth do
 
 
   defp do_authenticate(mechanism, conn) do
-    Logger.info fn -> "Authenticating with #{mechanism}" end
-    authenticate_with(mechanism, conn)
+    {:ok, conn} =
+      case mechanism do
+        {name, mod} ->
+          Logger.info fn -> "Authenticating with extension #{name} implemented by #{mod}" end
+          mod.authenticate(name, conn)
+        _ ->
+          Logger.info fn -> "Authenticating with #{mechanism}" end
+          authenticate_with(mechanism, conn)
+      end
+
     case success?(conn) do
       {:ok, conn} -> conn
       {:error, _conn} -> raise Romeo.Auth.Error, mechanism
@@ -58,20 +71,20 @@ defmodule Romeo.Auth do
     mod.send(conn, Romeo.Stanza.auth("PLAIN", Romeo.Stanza.base64_cdata(payload)))
   end
 
-  defp authenticate_with("DIGEST-MD5", _conn) do
-    raise "Not implemented"
-  end
-
-  defp authenticate_with("SCRAM-SHA-1", _conn) do
-    raise "Not implemented"
-  end
 
   defp authenticate_with("ANONYMOUS", %{transport: mod} = conn) do
     conn |> mod.send(Romeo.Stanza.auth("ANONYMOUS"))
   end
 
-  defp authenticate_with("EXTERNAL", _conn) do
-    raise "Not implemented"
+  defp authenticate_with(mechanism_name, _conn) do
+    raise """
+      Romeo does not include an implementation for authentication mechanism #{inspect mechanism_name}.
+      Please provide an implementation such as
+
+        Romeo.Connection.start_link(preferred_auth_mechanisms: [{#{inspect mechanism_name}, SomeModule}])
+
+      where `SomeModule` implements the Romeo.Auth.Mechanism behaviour.
+    """
   end
 
   defp success?(%{transport: mod} = conn) do
@@ -91,10 +104,15 @@ defmodule Romeo.Auth do
   end
 
   defp preferred_mechanism([], _), do: "PLAIN"
-  defp preferred_mechanism([h|t], mechanisms) do
-    case Enum.member?(mechanisms, h) do
-      true  -> h
-      false -> preferred_mechanism(t, mechanisms)
+  defp preferred_mechanism([mechanism | tail], mechanisms) do
+    case acceptable_mechanism?(mechanism, mechanisms) do
+      true  -> mechanism
+      false -> preferred_mechanism(tail, mechanisms)
     end
   end
+
+  defp acceptable_mechanism?({name, _mod}, mechanisms),
+    do: acceptable_mechanism?(name, mechanisms)
+  defp acceptable_mechanism?(mechanism, mechanisms),
+    do: Enum.member?(mechanisms, mechanism)
 end

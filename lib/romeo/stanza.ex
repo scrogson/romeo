@@ -103,13 +103,14 @@ defmodule Romeo.Stanza do
     cdata = xmlcdata(content: hash)
     xmlel(name: "handshake", children: [cdata])
   end
-  
+
   def auth(mechanism), do: auth(mechanism, [])
-  def auth(mechanism, body) do
+  def auth(mechanism, body, additional_attrs \\ []) do
     xmlel(name: "auth",
       attrs: [
         {"xmlns", ns_sasl},
         {"mechanism", mechanism}
+        | additional_attrs
       ],
       children: [body])
   end
