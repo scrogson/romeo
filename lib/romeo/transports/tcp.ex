@@ -22,9 +22,9 @@ defmodule Romeo.Transports.TCP do
   def connect(%Conn{host: host, port: port, socket_opts: socket_opts, legacy_tls: tls} = conn) do
     host = (host || host(conn.jid)) |> to_char_list
     port = (port || @default_port)
-    
+
     conn = %{conn | host: host, port: port, socket_opts: socket_opts}
-    
+
     case :gen_tcp.connect(host, port, socket_opts ++ @socket_opts, conn.timeout) do
       {:ok, socket} ->
         Logger.info fn -> "Established connection to #{host}" end
