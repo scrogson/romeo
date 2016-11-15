@@ -7,6 +7,7 @@ defmodule Romeo.Connection do
   alias Romeo.Connection.Features
 
   defstruct component: false,
+            legacy_tls: false,
             features: %Features{},
             host: nil,
             jid: nil,
