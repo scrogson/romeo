@@ -19,7 +19,7 @@ defmodule Romeo.Transports.TCP do
   import Kernel, except: [send: 2]
 
   @spec connect(Keyword.t) :: {:ok, state} | {:error, any}
-  def connect(%Conn{host: host, port: port, socket_opts: socket_opts, legacy_tls: legacy_tls} = conn) do
+  def connect(%Conn{host: host, port: port, socket_opts: socket_opts, legacy_tls: tls} = conn) do
     host = (host || host(conn.jid)) |> to_char_list
     port = (port || @default_port)
     
@@ -30,11 +30,7 @@ defmodule Romeo.Transports.TCP do
         Logger.info fn -> "Established connection to #{host}" end
         parser = :fxml_stream.new(self(), :infinity, [:no_gen_server])
         conn = %{conn | parser: parser, socket: {:gen_tcp, socket}}
-        conn = if legacy_tls do
-          upgrade_to_tls(conn)
-        else
-          conn
-        end
+        conn = if tls, do: upgrade_to_tls(conn), else: conn
         start_protocol(conn)
       {:error, _} = error ->
         error
