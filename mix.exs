@@ -1,7 +1,7 @@
 defmodule Romeo.Mixfile do
   use Mix.Project
 
-  @version "0.6.0"
+  @version "0.7.0"
 
   def project do
     [app: :romeo,
@@ -31,7 +31,7 @@ defmodule Romeo.Mixfile do
      {:fast_xml, "~> 1.1"},
 
      # Docs deps
-     {:ex_doc, "~> 0.13", only: :docs},
+     {:ex_doc, "~> 0.14", only: :docs},
 
      # Test deps
      {:ejabberd, "~> 16.8", only: :test},
@@ -48,7 +48,7 @@ defmodule Romeo.Mixfile do
   end
 
   defp package do
-    [files: ["lib", "priv", "mix.exs", "README.md", "LICENSE"],
+    [files: ["lib", "mix.exs", "README.md", "LICENSE"],
        maintainers: ["Sonny Scroggin"],
        licenses: ["MIT"],
        links: %{"GitHub" => "https://github.com/scrogson/romeo"}]
