@@ -337,6 +337,6 @@ defmodule Romeo.Stanza do
   Generates a random hex string for use as an id for a stanza.
   """
   def id do
-    :crypto.rand_bytes(2) |> Base.encode16(case: :lower)
+    :crypto.strong_rand_bytes(2) |> Base.encode16(case: :lower)
   end
 end
