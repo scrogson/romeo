@@ -7,7 +7,7 @@
 
 ## Installation
 
-1. Add romeo and exml to your list of dependencies in `mix.exs`:
+1. Add romeo to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
