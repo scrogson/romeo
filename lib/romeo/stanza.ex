@@ -104,8 +104,27 @@ defmodule Romeo.Stanza do
     xmlel(name: "handshake", children: [cdata])
   end
 
-  def auth(mechanism), do: auth(mechanism, [])
-  def auth(mechanism, body, additional_attrs \\ []) do
+  def auth(mechanism), do: auth(mechanism, [], [])
+  def auth(mechanism, body) do
+    auth(mechanism, body, [])
+  end
+  def auth(mechanism, [], []) do
+    xmlel(name: "auth",
+      attrs: [
+        {"xmlns", ns_sasl},
+        {"mechanism", mechanism},
+      ],
+      children: [])
+  end
+  def auth(mechanism, body, []) do
+    xmlel(name: "auth",
+      attrs: [
+        {"xmlns", ns_sasl},
+        {"mechanism", mechanism},
+      ],
+      children: [body])
+  end
+  def auth(mechanism, body, additional_attrs) do
     xmlel(name: "auth",
       attrs: [
         {"xmlns", ns_sasl},

@@ -61,6 +61,10 @@ defmodule Romeo.StanzaTest do
       "<auth xmlns='#{ns_sasl}' mechanism='PLAIN'>AHVzZXJuYW1lAHBhc3N3b3Jk</auth>"
   end
 
+  test "auth anonymous" do
+    assert Stanza.auth("ANONYMOUS") |> Stanza.to_xml == "<auth xmlns='#{ns_sasl}' mechanism='ANONYMOUS'/>"
+  end
+
   test "bind" do
     assert Stanza.bind("hedwig") |> Stanza.to_xml =~
       ~r"<iq type='set' id='(.*)'><bind xmlns='#{ns_bind}'><resource>hedwig</resource></bind></iq>"
