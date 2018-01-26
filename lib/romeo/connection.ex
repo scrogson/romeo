@@ -56,7 +56,7 @@ defmodule Romeo.Connection do
       args
       |> Keyword.put_new(:timeout, @timeout)
       |> Keyword.put_new(:transport, @default_transport)
-      |> Keyword.put(:owner, self)
+      |> Keyword.put(:owner, self())
 
     Connection.start_link(__MODULE__, struct(__MODULE__, args), options)
   end
@@ -132,7 +132,7 @@ defmodule Romeo.Connection do
         {:disconnect, error, conn}
       :unknown ->
         Logger.debug fn ->
-          [inspect(__MODULE__), ?\s, inspect(self), " received message: " | inspect(info)]
+          [inspect(__MODULE__), ?\s, inspect(self()), " received message: " | inspect(info)]
         end
         {:noreply, conn}
     end

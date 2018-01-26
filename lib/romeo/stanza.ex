@@ -22,7 +22,7 @@ defmodule Romeo.Stanza do
         {"type", stanza.type},
         {"id", stanza.id}
       ]
-    ) |> to_xml
+    ) |> to_xml()
   end
 
   def to_xml(%Presence{} = stanza) do
@@ -31,11 +31,11 @@ defmodule Romeo.Stanza do
         {"to", to_string(stanza.to)},
         {"type", stanza.type}
       ]
-    ) |> to_xml
+    ) |> to_xml()
   end
 
   def to_xml(%Message{to: to, type: type, body: body}) do
-    message(to_string(to), type, body) |> to_xml
+    message(to_string(to), type, body) |> to_xml()
   end
 
   @doc """
@@ -51,14 +51,14 @@ defmodule Romeo.Stanza do
       iex> Romeo.Stanza.to_xml(stanza)
       "<stream:stream to='im.capulet.lit' version='1.0' xml:lang='en' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>"
   """
-  def start_stream(server, xmlns \\ ns_jabber_client) do
+  def start_stream(server, xmlns \\ ns_jabber_client()) do
     xmlstreamstart(name: "stream:stream",
       attrs: [
         {"to", server},
         {"version", "1.0"},
         {"xml:lang", "en"},
         {"xmlns", xmlns},
-        {"xmlns:stream", ns_xmpp}
+        {"xmlns:stream", ns_xmpp()}
       ])
   end
 
@@ -85,14 +85,14 @@ defmodule Romeo.Stanza do
   def start_tls do
     xmlel(name: "starttls",
       attrs: [
-        {"xmlns", ns_tls}
+        {"xmlns", ns_tls()}
       ])
   end
 
   def compress(method) do
     xmlel(name: "compress",
       attrs: [
-        {"xmlns", ns_compress}
+        {"xmlns", ns_compress()}
       ],
       children: [
         xmlel(name: "method", children: [cdata(method)])
@@ -127,7 +127,7 @@ defmodule Romeo.Stanza do
   def auth(mechanism, body, additional_attrs) do
     xmlel(name: "auth",
       attrs: [
-        {"xmlns", ns_sasl},
+        {"xmlns", ns_sasl()},
         {"mechanism", mechanism}
         | additional_attrs
       ],
@@ -136,7 +136,7 @@ defmodule Romeo.Stanza do
 
   def bind(resource) do
     body = xmlel(name: "bind",
-      attrs: [{"xmlns", ns_bind}],
+      attrs: [{"xmlns", ns_bind()}],
       children: [
         xmlel(name: "resource",
           children: [cdata(resource)])
@@ -145,7 +145,7 @@ defmodule Romeo.Stanza do
   end
 
   def session do
-    iq("set", xmlel(name: "session", attrs: [{"xmlns", ns_session}]))
+    iq("set", xmlel(name: "session", attrs: [{"xmlns", ns_session()}]))
   end
 
   def presence do
@@ -164,7 +164,7 @@ defmodule Romeo.Stanza do
   end
 
   def iq(type, body) do
-    xmlel(name: "iq", attrs: [{"type", type}, {"id", id}], children: [body])
+    xmlel(name: "iq", attrs: [{"type", type}, {"id", id()}], children: [body])
   end
 
   def iq(to, type, body) do
@@ -173,21 +173,23 @@ defmodule Romeo.Stanza do
   end
 
   def get_roster do
-    iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_roster}]))
+    iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_roster()}]))
   end
 
   def set_roster_item(jid, subscription \\ "both", name \\ "", group \\ "") do
-    name_to_set = case name do
-      "" -> Romeo.JID.parse(jid).user
-      _ -> name
-    end
-    group_xmlel = case group do
-      "" -> []
-      _ -> [xmlel(name: "group", children: [cdata(group)])]
-    end
+    name_to_set =
+      case name do
+        "" -> Romeo.JID.parse(jid).user
+        _ -> name
+      end
+    group_xmlel =
+      case group do
+        "" -> []
+        _ -> [xmlel(name: "group", children: [cdata(group)])]
+      end
     iq("set", xmlel(
       name: "query",
-      attrs: [{"xmlns", ns_roster}],
+      attrs: [{"xmlns", ns_roster()}],
       children: [
         xmlel(name: "item", attrs: [
           {"jid", jid},
@@ -199,13 +201,13 @@ defmodule Romeo.Stanza do
   end
 
   def get_inband_register do
-    iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_inband_register}]))
+    iq("get", xmlel(name: "query", attrs: [{"xmlns", ns_inband_register()}]))
   end
 
   def set_inband_register(username, password) do
     iq("set", xmlel(
       name: "query",
-      attrs: [{"xmlns", ns_inband_register}],
+      attrs: [{"xmlns", ns_inband_register()}],
       children: [
         xmlel(name: "username", children: [cdata(username)]),
         xmlel(name: "password", children: [cdata(password)])
@@ -214,15 +216,15 @@ defmodule Romeo.Stanza do
   end
 
   def get_vcard(to) do
-    iq(to, "get", xmlel(name: "vCard", attrs: [{"xmlns", ns_vcard}]))
+    iq(to, "get", xmlel(name: "vCard", attrs: [{"xmlns", ns_vcard()}]))
   end
 
   def disco_info(to) do
-    iq(to, "get", xmlel(name: "query", attrs: [{"xmlns", ns_disco_info}]))
+    iq(to, "get", xmlel(name: "query", attrs: [{"xmlns", ns_disco_info()}]))
   end
 
   def disco_items(to) do
-    iq(to, "get", xmlel(name: "query", attrs: [{"xmlns", ns_disco_items}]))
+    iq(to, "get", xmlel(name: "query", attrs: [{"xmlns", ns_disco_items()}]))
   end
 
   @doc """
@@ -231,7 +233,7 @@ defmodule Romeo.Stanza do
   def subscribe(to, node, jid) do
     iq(to, "set", xmlel(
       name: "pubsub",
-      attrs: [{"xmlns", ns_pubsub}],
+      attrs: [{"xmlns", ns_pubsub()}],
       children: [
         xmlel(name: "subscribe", attrs: [{"node", node}, {"jid", jid}])
       ]))
@@ -274,7 +276,7 @@ defmodule Romeo.Stanza do
       ],
       children: [
         xmlel(name: "x",
-          attrs: [{"xmlns", ns_muc}],
+          attrs: [{"xmlns", ns_muc()}],
           children: children)
       ])
   end
@@ -299,7 +301,7 @@ defmodule Romeo.Stanza do
       attrs: [
         {"to", to},
         {"type", type},
-        {"id", id},
+        {"id", id()},
         {"xml:lang", "en"}
       ],
       children: generate_body(message))
@@ -326,17 +328,17 @@ defmodule Romeo.Stanza do
   def xhtml_im(data) when is_binary(data) do
     data
     |> :fxml_stream.parse_element
-    |> xhtml_im
+    |> xhtml_im()
   end
   def xhtml_im(data) do
     xmlel(name: "html",
       attrs: [
-        {"xmlns", ns_xhtml_im}
+        {"xmlns", ns_xhtml_im()}
       ],
       children: [
         xmlel(name: "body",
           attrs: [
-            {"xmlns", ns_xhtml}
+            {"xmlns", ns_xhtml()}
           ],
           children: [
             data

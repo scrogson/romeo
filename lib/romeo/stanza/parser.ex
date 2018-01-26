@@ -44,8 +44,8 @@ defmodule Romeo.Stanza.Parser do
 
   def parse(xmlel(name: name, attrs: attrs) = stanza) do
     [name: name]
-    |> Dict.merge(parse_attrs(attrs))
-    |> Dict.merge([xml: stanza])
+    |> Keyword.merge(parse_attrs(attrs))
+    |> Keyword.merge([xml: stanza])
     |> Enum.into(%{})
   end
 
