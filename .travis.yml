@@ -22,6 +22,7 @@ matrix:
 env:
   global:
   - MIX_ENV=test
+  - TRAVIS=false
 
 sudo: false
 
@@ -31,11 +32,8 @@ install:
   - mix deps.get
 
 before_script:
-  - env TRAVIS=false mix compile
+  - mix compile
   - mix ejabberd.gen.config
-
-script:
-  - mix test
 
 after_script:
   - mix coveralls.travis
