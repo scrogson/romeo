@@ -31,11 +31,11 @@ defmodule Romeo.Mixfile do
      {:fast_xml, "~> 1.1"},
 
      # Docs deps
-     {:ex_doc, "~> 0.14", only: :dev},
+     {:ex_doc, "~> 0.18", only: :dev},
 
      # Test deps
-     {:ejabberd, "~> 16.8", only: :test},
-     {:excoveralls, "~> 0.5", only: :test}]
+     {:ejabberd, "~> 18.1", only: :test},
+     {:excoveralls, "~> 0.8", only: :test}]
   end
 
   defp docs do
