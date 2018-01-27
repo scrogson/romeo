@@ -34,7 +34,7 @@ defmodule Romeo.Mixfile do
      {:ex_doc, "~> 0.18", only: :dev},
 
      # Test deps
-     {:ejabberd, "~> 18.1", only: :test},
+     {:ejabberd, github: "scrogson/ejabberd", branch: "fix_mix_compile", only: :test},
      {:excoveralls, "~> 0.8", only: :test}]
   end
 
