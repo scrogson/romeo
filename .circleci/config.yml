@@ -1,0 +1,25 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: elixir:latest
+      - image: rroemhild/ejabberd
+        container_name: ejabberd
+        ports:
+          - 5222:5222
+          - 5269:5269
+          - 5280:5280
+        environment:
+          XMPP_DOMAIN: localhost
+          EJABBERD_SKIP_MODULES_UPDATE: true
+    environment:
+      MIX_ENV: test
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix coveralls.circle
