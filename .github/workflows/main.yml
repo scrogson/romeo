@@ -6,10 +6,13 @@ jobs:
   test:
     runs-on: ubuntu:latest
 
-    container:
-      image: elixir:latest
-
     steps:
+      - name: Install Elixir
+        run: |
+          wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
+          apt update
+          apt install esl-erlang
+          apt install elixir
       - uses: actions/checkout@v1
       - name: Install Dependencies
         run: |
