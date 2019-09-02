@@ -1,9 +1,11 @@
 name: CI
 
-on: [push, pull-request]
+on: [push, pull_request]
 
 jobs:
   test:
+    name: Test
+
     runs-on: ubuntu:latest
 
     services:
