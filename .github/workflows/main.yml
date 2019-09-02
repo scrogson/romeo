@@ -6,22 +6,6 @@ jobs:
   test:
     runs-on: ubuntu:latest
 
-    steps:
-      - name: Install Elixir
-        run: |
-          wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
-          apt update
-          apt install esl-erlang
-          apt install elixir
-      - uses: actions/checkout@v1
-      - name: Install Dependencies
-        run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
-      - name: Run Tests
-        run: mix test
-
     services:
       ejabberd:
         image: rroemhild/ejabberd
@@ -33,3 +17,12 @@ jobs:
           XMPP_DOMAIN: localhost
           EJABBERD_SKIP_MODULES_UPDATE: true
         options: --name ejabberd
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.x
+          elixir-version: 1.9.x
+      - run: mix deps.get
+      - run: mix test
