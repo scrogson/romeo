@@ -5,10 +5,20 @@ defmodule Romeo.Stanza.ParserTest do
 
   alias Romeo.Stanza.Parser
 
-  @iq {:xmlel, "iq", [{"from", "im.test.dev"}, {"to", "scrogson@im.test.dev/issues"}, {"id", "b0e3"}, {"type", "result"}], [
-        {:xmlel, "query", [{"xmlns", "http://jabber.org/protocol/disco#items"}], [
-          {:xmlel, "item", [{"jid", "conference.im.test.dev"}], []},
-          {:xmlel, "item", [{"jid", "pubsub.im.test.dev"}], []}]}]}
+  @iq {:xmlel, "iq",
+       [
+         {"from", "im.test.dev"},
+         {"to", "scrogson@im.test.dev/issues"},
+         {"id", "b0e3"},
+         {"type", "result"}
+       ],
+       [
+         {:xmlel, "query", [{"xmlns", "http://jabber.org/protocol/disco#items"}],
+          [
+            {:xmlel, "item", [{"jid", "conference.im.test.dev"}], []},
+            {:xmlel, "item", [{"jid", "pubsub.im.test.dev"}], []}
+          ]}
+       ]}
 
   test "it parses stanzas" do
     parsed = Parser.parse(@iq)

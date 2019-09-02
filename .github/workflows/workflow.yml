@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull-request]
+
+jobs:
+  test:
+    runs-on: ubuntu:latest
+
+    container:
+      image: elixir:latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: Run Tests
+        run: mix test
+
+    services:
+      ejabberd:
+        image: rroemhild/ejabberd
+        ports:
+          - 5222:5222
+          - 5269:5269
+          - 5280:5280
+        env:
+          XMPP_DOMAIN: localhost
+          EJABBERD_SKIP_MODULES_UPDATE: true
+        options: --name ejabberd

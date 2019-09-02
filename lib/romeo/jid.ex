@@ -40,9 +40,11 @@ defmodule Romeo.JID do
 
   defimpl String.Chars, for: JID do
     def to_string(%JID{user: "", server: server, resource: ""}), do: server
+
     def to_string(%JID{user: user, server: server, resource: ""}) do
       user <> "@" <> server
     end
+
     def to_string(%JID{user: user, server: server, resource: resource}) do
       user <> "@" <> server <> "/" <> resource
     end
@@ -58,19 +60,19 @@ defmodule Romeo.JID do
       iex> Romeo.JID.bare("romeo@montague.lit/chamber")
       "romeo@montague.lit"
   """
-  @spec bare(jid :: binary | JID.t) :: binary
+  @spec bare(jid :: binary | JID.t()) :: binary
   def bare(jid) when is_binary(jid), do: parse(jid) |> bare
   def bare(%JID{} = jid), do: to_string(%JID{jid | resource: ""})
 
-  @spec user(jid :: binary | JID.t) :: binary
+  @spec user(jid :: binary | JID.t()) :: binary
   def user(jid) when is_binary(jid), do: parse(jid).user
   def user(%JID{user: user}), do: user
 
-  @spec server(jid :: binary | JID.t) :: binary
+  @spec server(jid :: binary | JID.t()) :: binary
   def server(jid) when is_binary(jid), do: parse(jid).server
   def server(%JID{server: server}), do: server
 
-  @spec resource(jid :: binary | JID.t) :: binary
+  @spec resource(jid :: binary | JID.t()) :: binary
   def resource(jid) when is_binary(jid), do: parse(jid).resource
   def resource(%JID{resource: resource}), do: resource
 
@@ -84,13 +86,15 @@ defmodule Romeo.JID do
       iex> Romeo.JID.parse("romeo@montague.lit")
       %Romeo.JID{user: "romeo", server: "montague.lit", resource: "", full: "romeo@montague.lit"}
   """
-  @spec parse(jid :: binary) :: JID.t
+  @spec parse(jid :: binary) :: JID.t()
   def parse(string) do
     case String.split(string, ["@", "/"], parts: 3) do
       [user, server, resource] ->
         %JID{user: user, server: server, resource: resource, full: string}
+
       [user, server] ->
         %JID{user: user, server: server, full: string}
+
       [server] ->
         %JID{server: server, full: string}
     end

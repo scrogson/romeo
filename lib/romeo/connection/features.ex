@@ -6,14 +6,12 @@ defmodule Romeo.Connection.Features do
   use Romeo.XML
 
   @type t :: %__MODULE__{}
-  defstruct [
-    amp?: false,
-    compression?: false,
-    registration?: false,
-    stream_management?: false,
-    tls?: false,
-    mechanisms: []
-  ]
+  defstruct amp?: false,
+            compression?: false,
+            registration?: false,
+            stream_management?: false,
+            tls?: false,
+            mechanisms: []
 
   def parse_stream_features(features) do
     %__MODULE__{
@@ -31,7 +29,9 @@ defmodule Romeo.Connection.Features do
       xml when Record.is_record(xml, :xmlel) ->
         mechanisms = xmlel(xml, :children)
         for mechanism <- mechanisms, into: [], do: Romeo.XML.cdata(mechanism)
-      nil -> []
+
+      nil ->
+        []
     end
   end
 
@@ -40,13 +40,16 @@ defmodule Romeo.Connection.Features do
       xml when Record.is_record(xml, :xmlel) ->
         methods = xmlel(xml, :children)
         for method <- methods, into: [], do: Romeo.XML.cdata(method)
-      _ -> false
+
+      _ ->
+        false
     end
   end
+
   def supports?(features, feature) do
     case Romeo.XML.subelement(features, feature) do
       nil -> false
-      _   -> true
+      _ -> true
     end
   end
 end

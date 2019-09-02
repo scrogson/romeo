@@ -1,5 +1,4 @@
 defmodule UserHelper do
-
   defmacro __using__(_) do
     quote do
       import UserHelper
@@ -14,23 +13,65 @@ defmodule UserHelper do
 
     register_user(username, password)
 
-    [jid: username <> "@localhost",
-     password: password,
-     resource: resource,
-     nickname: username,
-     port: (if tls, do: 52225, else: 52222)]
+    [
+      jid: username <> "@localhost",
+      password: password,
+      resource: resource,
+      nickname: username,
+      port: if(tls, do: 5222, else: 5222)
+    ]
   end
 
   def register_user(username, password \\ "password") do
-    :ejabberd_admin.register(username, "localhost", password)
+    System.cmd("docker", [
+      "exec",
+      "ejabberd",
+      "ejabberdctl",
+      "register",
+      username,
+      "localhost",
+      password
+    ])
   end
 
   def unregister_user(username) do
-    :ejabberd_admin.unregister(username, "localhost")
+    System.cmd("docker", [
+      "exec",
+      "ejabberd",
+      "ejabberdctl",
+      "unregister",
+      username,
+      "localhost"
+    ])
   end
 
   def setup_presence_subscriptions(user1, user2) do
-    :mod_admin_extra.add_rosteritem(user1, "localhost", user2, "localhost", user2, "buddies", "both")
-    :mod_admin_extra.add_rosteritem(user2, "localhost", user1, "localhost", user1, "buddies", "both")
+    System.cmd("docker", [
+      "exec",
+      "ejabberd",
+      "ejabberdctl",
+      "add_rosteritem",
+      user1,
+      "localhost",
+      user2,
+      "localhost",
+      user2,
+      "buddies",
+      "both"
+    ])
+
+    System.cmd("docker", [
+      "exec",
+      "ejabberd",
+      "ejabberdctl",
+      "add_rosteritem",
+      user2,
+      "localhost",
+      user1,
+      "localhost",
+      user1,
+      "buddies",
+      "both"
+    ])
   end
 end

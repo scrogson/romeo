@@ -8,14 +8,14 @@ defmodule Romeo.Auth do
 
   defmodule Mechanism do
     @doc "Authenticates using the supplied mechanism"
-    @callback authenticate(String.t, Romeo.Connection.t) :: Romeo.Connection.t
+    @callback authenticate(String.t(), Romeo.Connection.t()) :: Romeo.Connection.t()
   end
 
   defmodule Error do
     defexception [:message]
 
     def exception(mechanism) do
-      msg = "Failed to authenticate using mechanism: #{inspect mechanism}"
+      msg = "Failed to authenticate using mechanism: #{inspect(mechanism)}"
       %Romeo.Auth.Error{message: msg}
     end
   end
@@ -26,7 +26,7 @@ defmodule Romeo.Auth do
   If the preferred mechanism is not supported it will choose PLAIN.
   """
   def authenticate!(conn) do
-    preferred  = conn.preferred_auth_mechanisms
+    preferred = conn.preferred_auth_mechanisms
     mechanisms = conn.features.mechanisms
     preferred_mechanism(preferred, mechanisms) |> do_authenticate(conn)
   end
@@ -42,20 +42,21 @@ defmodule Romeo.Auth do
     |> mod.recv(fn
       conn, xmlel(name: "handshake") ->
         conn
+
       _conn, xmlel(name: "stream:error") ->
         raise Romeo.Auth.Error, "handshake error"
     end)
   end
 
-
   defp do_authenticate(mechanism, conn) do
     {:ok, conn} =
       case mechanism do
         {name, mod} ->
-          Logger.info fn -> "Authenticating with extension #{name} implemented by #{mod}" end
+          Logger.info(fn -> "Authenticating with extension #{name} implemented by #{mod}" end)
           mod.authenticate(name, conn)
+
         _ ->
-          Logger.info fn -> "Authenticating with #{mechanism}" end
+          Logger.info(fn -> "Authenticating with #{mechanism}" end)
           authenticate_with(mechanism, conn)
       end
 
@@ -71,17 +72,18 @@ defmodule Romeo.Auth do
     mod.send(conn, Romeo.Stanza.auth("PLAIN", Romeo.Stanza.base64_cdata(payload)))
   end
 
-
   defp authenticate_with("ANONYMOUS", %{transport: mod} = conn) do
     conn |> mod.send(Romeo.Stanza.auth("ANONYMOUS"))
   end
 
   defp authenticate_with(mechanism_name, _conn) do
     raise """
-      Romeo does not include an implementation for authentication mechanism #{inspect mechanism_name}.
+      Romeo does not include an implementation for authentication mechanism #{
+      inspect(mechanism_name)
+    }.
       Please provide an implementation such as
 
-        Romeo.Connection.start_link(preferred_auth_mechanisms: [{#{inspect mechanism_name}, SomeModule}])
+        Romeo.Connection.start_link(preferred_auth_mechanisms: [{#{inspect(mechanism_name)}, SomeModule}])
 
       where `SomeModule` implements the Romeo.Auth.Mechanism behaviour.
     """
@@ -91,8 +93,9 @@ defmodule Romeo.Auth do
     mod.recv(conn, fn conn, xmlel(name: name) ->
       case name do
         "success" ->
-          Logger.info fn -> "Authenticated successfully" end
+          Logger.info(fn -> "Authenticated successfully" end)
           {:ok, conn}
+
         "failure" ->
           {:error, conn}
       end
@@ -104,15 +107,17 @@ defmodule Romeo.Auth do
   end
 
   defp preferred_mechanism([], _), do: "PLAIN"
+
   defp preferred_mechanism([mechanism | tail], mechanisms) do
     case acceptable_mechanism?(mechanism, mechanisms) do
-      true  -> mechanism
+      true -> mechanism
       false -> preferred_mechanism(tail, mechanisms)
     end
   end
 
   defp acceptable_mechanism?({name, _mod}, mechanisms),
     do: acceptable_mechanism?(name, mechanisms)
+
   defp acceptable_mechanism?(mechanism, mechanisms),
     do: Enum.member?(mechanisms, mechanism)
 end

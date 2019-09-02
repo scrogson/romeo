@@ -4,12 +4,11 @@ defmodule Romeo.RosterTest do
   use UserHelper
   use Romeo.XML
 
-  import Romeo.Roster
-
+  alias Romeo.Roster
   alias Romeo.Roster.Item
 
   setup do
-    romeo  = build_user("romeo", tls: true)
+    romeo = build_user("romeo", tls: true)
     juliet = build_user("juliet", resource: "juliet", tls: true)
     mercutio = build_user("mercutio", resource: "mercutio", tls: true)
     benvolio = build_user("benvolio", resource: "benvolio", tls: true)
@@ -21,15 +20,29 @@ defmodule Romeo.RosterTest do
     {:ok, romeo: romeo, juliet: juliet, mercutio: mercutio, benvolio: benvolio, pid: pid}
   end
 
-  test "getting, adding, removing roster items", %{benvolio: benvolio, mercutio: mercutio, pid: pid} do
-    assert [%Item{name: "juliet"}, %Item{name: "mercutio"}] = items(pid)
+  test "getting, adding, removing roster items", %{
+    benvolio: benvolio,
+    mercutio: mercutio,
+    pid: pid
+  } do
+    items = Roster.items(pid)
+    assert item_by_name(items, "juliet")
+    assert item_by_name(items, "mercutio")
 
-    b_jid = benvolio[:jid]
-    assert :ok = add(pid, b_jid)
-    assert [%Item{name: "juliet"}, %Item{name: "mercutio"}, %Item{name: "benvolio"}] = items(pid)
+    assert :ok = Roster.add(pid, benvolio[:jid])
+    items = Roster.items(pid)
+    assert item_by_name(items, "juliet")
+    assert item_by_name(items, "mercutio")
+    assert item_by_name(items, "benvolio")
 
-    m_jid = mercutio[:jid]
-    assert :ok = remove(pid, m_jid)
-    assert [%Item{name: "juliet"}, %Item{name: "benvolio"}] = items(pid)
+    assert :ok = Roster.remove(pid, mercutio[:jid])
+    items = Roster.items(pid)
+    assert item_by_name(items, "juliet")
+    assert item_by_name(items, "benvolio")
+    refute item_by_name(items, "mercutio")
+  end
+
+  defp item_by_name(items, name) do
+    Enum.find(items, fn item -> item.name == name end)
   end
 end

@@ -13,8 +13,9 @@ defmodule Romeo.Roster do
   Returns roster items
   """
   def items(pid) do
-    Logger.info fn -> "Getting roster items" end
-    stanza = Stanza.get_roster
+    Logger.info(fn -> "Getting roster items" end)
+    stanza = Stanza.get_roster()
+
     case send_stanza(pid, stanza) do
       {:ok, %IQ{type: "result"} = result} -> result.items
       _ -> :error
@@ -25,29 +26,32 @@ defmodule Romeo.Roster do
   Adds jid to roster
   """
   def add(pid, jid) do
-    Logger.info fn -> "Adding #{jid} to roster items" end
+    Logger.info(fn -> "Adding #{jid} to roster items" end)
     stanza = Stanza.set_roster_item(jid)
-    case send_stanza(pid, stanza) do
-      {:ok, _} -> :ok
-      _ -> :error
-    end
-  end
-  def add(pid, jid, name) do
-    Logger.info fn -> "Adding #{jid} to roster items" end
-    stanza = Stanza.set_roster_item(jid, "both", name)
+
     case send_stanza(pid, stanza) do
       {:ok, _} -> :ok
       _ -> :error
     end
   end
 
+  def add(pid, jid, name) do
+    Logger.info(fn -> "Adding #{jid} to roster items" end)
+    stanza = Stanza.set_roster_item(jid, "both", name)
+
+    case send_stanza(pid, stanza) do
+      {:ok, _} -> :ok
+      _ -> :error
+    end
+  end
 
   @doc """
   Removes jid to roster
   """
   def remove(pid, jid) do
-    Logger.info fn -> "Removing #{jid} from roster items" end
+    Logger.info(fn -> "Removing #{jid} from roster items" end)
     stanza = Stanza.set_roster_item(jid, "remove")
+
     case send_stanza(pid, stanza) do
       {:ok, _} -> :ok
       _ -> :error
@@ -61,8 +65,9 @@ defmodule Romeo.Roster do
     receive do
       {:stanza, %IQ{type: "result", id: ^id} = result} -> {:ok, result}
       {:stanza, %IQ{type: "error", id: ^id}} -> :error
-    after @timeout ->
-      {:error, :timeout}
+    after
+      @timeout ->
+        {:error, :timeout}
     end
   end
 end

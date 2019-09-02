@@ -10,6 +10,7 @@ defmodule Romeo.Error do
     secs = ms / 1_000
     "Failed to #{step} after #{secs} seconds."
   end
+
   defp translate_message(message), do: inspect(message)
 
   defp translate_connection_step(atom) do

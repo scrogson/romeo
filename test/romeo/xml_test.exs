@@ -5,13 +5,21 @@ defmodule Romeo.XMLTest do
   import Romeo.XML
 
   test "encode!" do
-    xml = xmlel(name: "message", children: [
-      xmlel(name: "body", children: [
-        xmlcdata(content: "testing")
-      ])
-    ])
+    xml =
+      xmlel(
+        name: "message",
+        children: [
+          xmlel(
+            name: "body",
+            children: [
+              xmlcdata(content: "testing")
+            ]
+          )
+        ]
+      )
+
     assert encode!(xml) ==
-      ~s(<message><body>testing</body></message>)
+             ~s(<message><body>testing</body></message>)
   end
 
   test "attr" do
@@ -22,29 +30,47 @@ defmodule Romeo.XMLTest do
   end
 
   test "subelement" do
-    xml = xmlel(name: "message", children: [
-      xmlel(name: "body", children: [
-        xmlcdata(content: "testing")
-      ])
-    ])
+    xml =
+      xmlel(
+        name: "message",
+        children: [
+          xmlel(
+            name: "body",
+            children: [
+              xmlcdata(content: "testing")
+            ]
+          )
+        ]
+      )
+
     assert subelement(xml, "body") ==
-      {:xmlel, "body", [], [xmlcdata(content: "testing")]}
+             {:xmlel, "body", [], [xmlcdata(content: "testing")]}
 
     assert subelement(xml, "non-existent") == nil
     assert subelement(xml, "non-existent", []) == []
   end
 
   test "cdata" do
-    body = xmlel(name: "body", children: [
-      xmlcdata(content: "testing")
-    ])
+    body =
+      xmlel(
+        name: "body",
+        children: [
+          xmlcdata(content: "testing")
+        ]
+      )
+
     assert cdata(body) == "testing"
   end
 
   test "empty cdata" do
-    body = xmlel(name: "body", children: [
-      xmlcdata(content: "testing")
-    ])
+    body =
+      xmlel(
+        name: "body",
+        children: [
+          xmlcdata(content: "testing")
+        ]
+      )
+
     assert cdata(body) == "testing"
   end
 end

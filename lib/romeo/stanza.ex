@@ -11,27 +11,32 @@ defmodule Romeo.Stanza do
   def to_xml(record) when Record.is_record(record) do
     Romeo.XML.encode!(record)
   end
+
   def to_xml(record) when Record.is_record(record) do
     Romeo.XML.encode!(record)
   end
 
   def to_xml(%IQ{} = stanza) do
-    xmlel(name: "iq",
+    xmlel(
+      name: "iq",
       attrs: [
         {"to", to_string(stanza.to)},
         {"type", stanza.type},
         {"id", stanza.id}
       ]
-    ) |> to_xml()
+    )
+    |> to_xml()
   end
 
   def to_xml(%Presence{} = stanza) do
-    xmlel(name: "presence",
+    xmlel(
+      name: "presence",
       attrs: [
         {"to", to_string(stanza.to)},
         {"type", stanza.type}
       ]
-    ) |> to_xml()
+    )
+    |> to_xml()
   end
 
   def to_xml(%Message{to: to, type: type, body: body}) do
@@ -52,14 +57,16 @@ defmodule Romeo.Stanza do
       "<stream:stream to='im.capulet.lit' version='1.0' xml:lang='en' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>"
   """
   def start_stream(server, xmlns \\ ns_jabber_client()) do
-    xmlstreamstart(name: "stream:stream",
+    xmlstreamstart(
+      name: "stream:stream",
       attrs: [
         {"to", server},
         {"version", "1.0"},
         {"xml:lang", "en"},
         {"xmlns", xmlns},
         {"xmlns:stream", ns_xmpp()}
-      ])
+      ]
+    )
   end
 
   @doc """
@@ -83,20 +90,24 @@ defmodule Romeo.Stanza do
       "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>"
   """
   def start_tls do
-    xmlel(name: "starttls",
+    xmlel(
+      name: "starttls",
       attrs: [
         {"xmlns", ns_tls()}
-      ])
+      ]
+    )
   end
 
   def compress(method) do
-    xmlel(name: "compress",
+    xmlel(
+      name: "compress",
       attrs: [
         {"xmlns", ns_compress()}
       ],
       children: [
         xmlel(name: "method", children: [cdata(method)])
-      ])
+      ]
+    )
   end
 
   def handshake(hash) do
@@ -105,42 +116,58 @@ defmodule Romeo.Stanza do
   end
 
   def auth(mechanism), do: auth(mechanism, [], [])
+
   def auth(mechanism, body) do
     auth(mechanism, body, [])
   end
+
   def auth(mechanism, [], []) do
-    xmlel(name: "auth",
+    xmlel(
+      name: "auth",
       attrs: [
-        {"xmlns", ns_sasl},
-        {"mechanism", mechanism},
+        {"xmlns", ns_sasl()},
+        {"mechanism", mechanism}
       ],
-      children: [])
+      children: []
+    )
   end
+
   def auth(mechanism, body, []) do
-    xmlel(name: "auth",
+    xmlel(
+      name: "auth",
       attrs: [
-        {"xmlns", ns_sasl},
-        {"mechanism", mechanism},
+        {"xmlns", ns_sasl()},
+        {"mechanism", mechanism}
       ],
-      children: [body])
+      children: [body]
+    )
   end
+
   def auth(mechanism, body, additional_attrs) do
-    xmlel(name: "auth",
+    xmlel(
+      name: "auth",
       attrs: [
         {"xmlns", ns_sasl()},
         {"mechanism", mechanism}
         | additional_attrs
       ],
-      children: [body])
+      children: [body]
+    )
   end
 
   def bind(resource) do
-    body = xmlel(name: "bind",
-      attrs: [{"xmlns", ns_bind()}],
-      children: [
-        xmlel(name: "resource",
-          children: [cdata(resource)])
-      ])
+    body =
+      xmlel(
+        name: "bind",
+        attrs: [{"xmlns", ns_bind()}],
+        children: [
+          xmlel(
+            name: "resource",
+            children: [cdata(resource)]
+          )
+        ]
+      )
+
     iq("set", body)
   end
 
@@ -169,7 +196,7 @@ defmodule Romeo.Stanza do
 
   def iq(to, type, body) do
     iq = iq(type, body)
-    xmlel(iq, attrs: [{"to", to}|xmlel(iq, :attrs)])
+    xmlel(iq, attrs: [{"to", to} | xmlel(iq, :attrs)])
   end
 
   def get_roster do
@@ -182,22 +209,31 @@ defmodule Romeo.Stanza do
         "" -> Romeo.JID.parse(jid).user
         _ -> name
       end
+
     group_xmlel =
       case group do
         "" -> []
         _ -> [xmlel(name: "group", children: [cdata(group)])]
       end
-    iq("set", xmlel(
-      name: "query",
-      attrs: [{"xmlns", ns_roster()}],
-      children: [
-        xmlel(name: "item", attrs: [
-          {"jid", jid},
-          {"subscription", subscription},
-          {"name", name_to_set}
-        ], children: group_xmlel)
-      ]
-    ))
+
+    iq(
+      "set",
+      xmlel(
+        name: "query",
+        attrs: [{"xmlns", ns_roster()}],
+        children: [
+          xmlel(
+            name: "item",
+            attrs: [
+              {"jid", jid},
+              {"subscription", subscription},
+              {"name", name_to_set}
+            ],
+            children: group_xmlel
+          )
+        ]
+      )
+    )
   end
 
   def get_inband_register do
@@ -205,14 +241,17 @@ defmodule Romeo.Stanza do
   end
 
   def set_inband_register(username, password) do
-    iq("set", xmlel(
-      name: "query",
-      attrs: [{"xmlns", ns_inband_register()}],
-      children: [
-        xmlel(name: "username", children: [cdata(username)]),
-        xmlel(name: "password", children: [cdata(password)])
-      ]
-    ))
+    iq(
+      "set",
+      xmlel(
+        name: "query",
+        attrs: [{"xmlns", ns_inband_register()}],
+        children: [
+          xmlel(name: "username", children: [cdata(username)]),
+          xmlel(name: "password", children: [cdata(password)])
+        ]
+      )
+    )
   end
 
   def get_vcard(to) do
@@ -231,12 +270,17 @@ defmodule Romeo.Stanza do
   Generates a stanza to join a pubsub node. (XEP-0060)
   """
   def subscribe(to, node, jid) do
-    iq(to, "set", xmlel(
-      name: "pubsub",
-      attrs: [{"xmlns", ns_pubsub()}],
-      children: [
-        xmlel(name: "subscribe", attrs: [{"node", node}, {"jid", jid}])
-      ]))
+    iq(
+      to,
+      "set",
+      xmlel(
+        name: "pubsub",
+        attrs: [{"xmlns", ns_pubsub()}],
+        children: [
+          xmlel(name: "subscribe", attrs: [{"node", node}, {"jid", jid}])
+        ]
+      )
+    )
   end
 
   @doc """
@@ -262,7 +306,7 @@ defmodule Romeo.Stanza do
        [{:xmlel, "history", [{"maxstanzas", "0"}], []}]}]}
   """
   def join(room, nickname, opts \\ []) do
-    history  = Keyword.get(opts, :history)
+    history = Keyword.get(opts, :history)
     password = Keyword.get(opts, :password)
 
     password = if password, do: [muc_password(password)], else: []
@@ -270,15 +314,19 @@ defmodule Romeo.Stanza do
 
     children = history ++ password
 
-    xmlel(name: "presence",
+    xmlel(
+      name: "presence",
       attrs: [
         {"to", "#{room}/#{nickname}"}
       ],
       children: [
-        xmlel(name: "x",
+        xmlel(
+          name: "x",
           attrs: [{"xmlns", ns_muc()}],
-          children: children)
-      ])
+          children: children
+        )
+      ]
+    )
   end
 
   defp history([{key, value}]) do
@@ -296,54 +344,66 @@ defmodule Romeo.Stanza do
   def message(msg) when is_map(msg) do
     message(msg["to"], msg["type"], msg["body"])
   end
+
   def message(to, type, message) do
-    xmlel(name: "message",
+    xmlel(
+      name: "message",
       attrs: [
         {"to", to},
         {"type", type},
         {"id", id()},
         {"xml:lang", "en"}
       ],
-      children: generate_body(message))
+      children: generate_body(message)
+    )
   end
 
   def generate_body(data) do
     cond do
       is_list(data) ->
         data
+
       is_tuple(data) ->
         [data]
+
       true ->
         [body(data)]
     end
   end
 
   def body(data) do
-    xmlel(name: "body",
+    xmlel(
+      name: "body",
       children: [
         cdata(data)
-      ])
+      ]
+    )
   end
 
   def xhtml_im(data) when is_binary(data) do
     data
-    |> :fxml_stream.parse_element
+    |> :fxml_stream.parse_element()
     |> xhtml_im()
   end
+
   def xhtml_im(data) do
-    xmlel(name: "html",
+    xmlel(
+      name: "html",
       attrs: [
         {"xmlns", ns_xhtml_im()}
       ],
       children: [
-        xmlel(name: "body",
+        xmlel(
+          name: "body",
           attrs: [
             {"xmlns", ns_xhtml()}
           ],
           children: [
             data
-          ])
-      ])
+          ]
+        )
+      ]
+    )
   end
 
   def cdata(payload) do

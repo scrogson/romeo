@@ -9,43 +9,45 @@ defmodule Romeo.Stanza.Parser do
 
   def parse(xmlel(name: "message", attrs: attrs) = stanza) do
     struct(Message, parse_attrs(attrs))
-    |> struct([body: get_body(stanza)])
-    |> struct([html: get_html(stanza)])
-    |> struct([xml: stanza])
-    |> struct([delayed?: delayed?(stanza)])
+    |> struct(body: get_body(stanza))
+    |> struct(html: get_html(stanza))
+    |> struct(xml: stanza)
+    |> struct(delayed?: delayed?(stanza))
   end
 
   def parse(xmlel(name: "presence", attrs: attrs) = stanza) do
     struct(Presence, parse_attrs(attrs))
-    |> struct([show: get_show(stanza)])
-    |> struct([status: get_status(stanza)])
-    |> struct([xml: stanza])
+    |> struct(show: get_show(stanza))
+    |> struct(status: get_status(stanza))
+    |> struct(xml: stanza)
   end
 
   def parse(xmlel(name: "iq", attrs: attrs) = stanza) do
     case :fxml.get_path_s(stanza, [{:elem, "query"}, {:attr, "xmlns"}]) do
       "jabber:iq:roster" ->
         struct(IQ, parse_attrs(attrs))
-        |> struct([items: (Romeo.XML.subelement(stanza, "query") |> parse)])
-        |> struct([xml: stanza])
-      _ -> struct(IQ, parse_attrs(attrs)) |> struct([xml: stanza])
+        |> struct(items: Romeo.XML.subelement(stanza, "query") |> parse)
+        |> struct(xml: stanza)
+
+      _ ->
+        struct(IQ, parse_attrs(attrs)) |> struct(xml: stanza)
     end
   end
 
   def parse(xmlel(name: "query") = stanza) do
-    stanza |> Romeo.XML.subelements("item") |> Enum.map(&parse/1) |> Enum.reverse
+    stanza |> Romeo.XML.subelements("item") |> Enum.map(&parse/1) |> Enum.reverse()
   end
 
   def parse(xmlel(name: "item", attrs: attrs) = stanza) do
     struct(Item, parse_attrs(attrs))
-    |> struct([group: get_group(stanza)])
-    |> struct([xml: stanza])
+    |> struct(group: get_group(stanza))
+    |> struct(xml: stanza)
   end
 
   def parse(xmlel(name: name, attrs: attrs) = stanza) do
     [name: name]
     |> Keyword.merge(parse_attrs(attrs))
-    |> Keyword.merge([xml: stanza])
+    |> Keyword.merge(xml: stanza)
     |> Enum.into(%{})
   end
 
@@ -54,17 +56,21 @@ defmodule Romeo.Stanza.Parser do
   def parse(stanza), do: stanza
 
   defp parse_attrs([]), do: []
+
   defp parse_attrs(attrs) do
     parse_attrs(attrs, [])
   end
-  defp parse_attrs([{k,v}|rest], acc) do
-    parse_attrs(rest, [parse_attr({k,v})|acc])
+
+  defp parse_attrs([{k, v} | rest], acc) do
+    parse_attrs(rest, [parse_attr({k, v}) | acc])
   end
+
   defp parse_attrs([], acc), do: acc
 
   defp parse_attr({key, value}) when key in ["to", "from", "jid"] do
     {String.to_atom(key), Romeo.JID.parse(value)}
   end
+
   defp parse_attr({key, value}) do
     {String.to_atom(key), value}
   end
@@ -78,9 +84,10 @@ defmodule Romeo.Stanza.Parser do
   defp get_group(stanza), do: subelement(stanza, "group") |> cdata
 
   defp delayed?(xmlel(children: children)) do
-    Enum.any? children, fn child ->
-      elem(child, 1) == "delay" || elem(child, 1) == "x" &&
-        attr(child, "xmlns") == "jabber:x:delay"
-    end
+    Enum.any?(children, fn child ->
+      elem(child, 1) == "delay" ||
+        (elem(child, 1) == "x" &&
+           attr(child, "xmlns") == "jabber:x:delay")
+    end)
   end
 end

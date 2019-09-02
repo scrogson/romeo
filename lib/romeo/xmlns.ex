@@ -8,7 +8,7 @@ defmodule Romeo.XMLNS do
 
   defmacro __using__([]) do
     quote do
-      import unquote __MODULE__
+      import unquote(__MODULE__)
     end
   end
 
@@ -416,6 +416,7 @@ defmodule Romeo.XMLNS do
   # Defined by XEP-0114: Jabber Component Protocol.
   def ns_component_accept,
     do: "jabber:component:accept"
+
   def ns_component_connect,
     do: "jabber:component:connect"
 

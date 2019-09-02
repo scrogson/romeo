@@ -75,7 +75,7 @@ defmodule Romeo.Connection do
 
     * `:timeout` - Call timeout (default: `#{@timeout}`)
   """
-  @spec close(pid, Keyword.t) :: :ok
+  @spec close(pid, Keyword.t()) :: :ok
   def close(pid, opts \\ []) do
     Connection.call(pid, :close, opts[:timeout] || @timeout)
   end
@@ -90,6 +90,7 @@ defmodule Romeo.Connection do
     case transport.connect(conn) do
       {:ok, conn} ->
         {:ok, conn}
+
       {:error, _} ->
         {:backoff, timeout, conn}
     end
@@ -107,14 +108,17 @@ defmodule Romeo.Connection do
   def handle_call(_, _, %{socket: nil} = conn) do
     {:reply, {:error, :closed}, conn}
   end
+
   def handle_call({:send, data}, _, %{transport: transport} = conn) do
     case transport.send(conn, data) do
       {:ok, conn} ->
         {:reply, :ok, conn}
+
       {:error, _} = error ->
         {:disconnect, error, error, conn}
     end
   end
+
   def handle_call(:close, from, %{socket: socket, transport: transport} = conn) do
     transport.disconnect({:close, from}, socket)
     {:reply, :ok, conn}
@@ -124,16 +128,20 @@ defmodule Romeo.Connection do
     case transport.handle_message(info, conn) do
       {:ok, conn, :more} ->
         {:noreply, conn}
+
       {:ok, conn, stanza} ->
         stanza = Romeo.Stanza.Parser.parse(stanza)
         Kernel.send(owner, {:stanza, stanza})
         {:noreply, conn}
+
       {:error, _} = error ->
         {:disconnect, error, conn}
+
       :unknown ->
-        Logger.debug fn ->
+        Logger.debug(fn ->
           [inspect(__MODULE__), ?\s, inspect(self()), " received message: " | inspect(info)]
-        end
+        end)
+
         {:noreply, conn}
     end
   end

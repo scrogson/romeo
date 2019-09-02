@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  ejabberd:
+    image: rroemhild/ejabberd
+    container_name: ejabberd
+    ports:
+      - 5222:5222
+      - 5269:5269
+      - 5280:5280
+    environment:
+      XMPP_DOMAIN: localhost
+      EJABBERD_SKIP_MODULES_UPDATE: "true"
