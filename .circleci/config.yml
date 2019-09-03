@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: elixir:latest
+      - image: circleci/elixir:latest
       - image: rroemhild/ejabberd
         container_name: ejabberd
         ports:
