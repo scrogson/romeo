@@ -8,6 +8,7 @@ jobs:
       MIX_ENV: test
     steps:
       - checkout
+      - setup_remote_docker
       - run: docker-compose up -d
       - run: mix local.hex --force
       - run: mix local.rebar --force
