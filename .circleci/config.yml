@@ -4,14 +4,18 @@ jobs:
   build:
     docker:
       - image: circleci/elixir:latest
+      - image: rroemhild/ejabberd
+        container_name: ejabberd
+        environment:
+          XMPP_DOMAIN: localhost
+          EJABBERD_SKIP_MODULES_UPDATE: "true"
     environment:
       MIX_ENV: test
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker-compose up -d
       - run: mix local.hex --force
       - run: mix local.rebar --force
       - run: mix deps.get
       - run: mix format --check-formatted
-      - run: mix coveralls.circle
+      - run: mix coveralls.json
