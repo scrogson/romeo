@@ -5,7 +5,6 @@ defmodule Romeo.RosterTest do
   use Romeo.XML
 
   alias Romeo.Roster
-  alias Romeo.Roster.Item
 
   setup do
     romeo = build_user("romeo", tls: true)
