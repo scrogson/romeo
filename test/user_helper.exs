@@ -23,55 +23,63 @@ defmodule UserHelper do
   end
 
   def register_user(username, password \\ "password") do
-    System.cmd("docker", [
-      "exec",
-      "ejabberd",
-      "ejabberdctl",
-      "register",
-      username,
-      "localhost",
-      password
-    ])
+    IO.inspect(
+      System.cmd("docker", [
+        "exec",
+        "ejabberd",
+        "ejabberdctl",
+        "register",
+        username,
+        "localhost",
+        password
+      ])
+    )
   end
 
   def unregister_user(username) do
-    System.cmd("docker", [
-      "exec",
-      "ejabberd",
-      "ejabberdctl",
-      "unregister",
-      username,
-      "localhost"
-    ])
+    IO.inspect(
+      System.cmd("docker", [
+        "exec",
+        "ejabberd",
+        "ejabberdctl",
+        "unregister",
+        username,
+        "localhost"
+      ])
+    )
   end
 
   def setup_presence_subscriptions(user1, user2) do
-    System.cmd("docker", [
-      "exec",
-      "ejabberd",
-      "ejabberdctl",
-      "add_rosteritem",
-      user1,
-      "localhost",
-      user2,
-      "localhost",
-      user2,
-      "buddies",
-      "both"
-    ])
+    IO.inspect(
+      System.cmd("docker", [
+        "exec",
+        "ejabberd",
+        "ejabberdctl",
+        "add_rosteritem",
+        user1,
+        "localhost",
+        user2,
+        "localhost",
+        user2,
+        "buddies",
+        "both"
+      ])
+    )
 
-    System.cmd("docker", [
-      "exec",
-      "ejabberd",
-      "ejabberdctl",
-      "add_rosteritem",
-      user2,
-      "localhost",
-      user1,
-      "localhost",
-      user1,
-      "buddies",
-      "both"
-    ])
+    IO.inspect(
+      System.cmd("docker", [
+        "exec",
+        "ejabberd",
+        "ejabberdctl",
+        "add_rosteritem",
+        user2,
+        "localhost",
+        user1,
+        "localhost",
+        user1,
+        "buddies",
+        "both"
+      ])
+    )
   end
 end
